@@ -1,0 +1,4 @@
+city: cape_town
+data_root: south-africa/wc/cape-town   
+currency: ZAR
+snapshots: [2025-09-28, 2025-12-29, 2026-03-30, 2026-06-29]
