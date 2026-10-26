@@ -23,14 +23,20 @@ CHUNK = 500_000
 
 
 def download_status(cfg, snap, manifest):
-    """'co' if all 3 files are usable, else an HTTP code (e.g. '403') or a short reason."""
+    """'co' if all 3 files were downloaded, else an HTTP code (e.g. '403') or a short reason.
+
+    Only a failed DOWNLOAD counts here. A file that downloaded fine but has a data
+    problem (e.g. a missing column) is still 'co'; the problem stays in the manifest.
+    """
     for name in NEEDED:
         row = manifest.get((snap, name))
-        if row and row.get("status") == "error":
+        if row and row.get("action") == "failed":
             m = re.search(r"HTTP (\d{3})", row.get("message", ""))
             return m.group(1) if m else "loi"
         if not raw_file(cfg, snap, name).exists():
             return "thieu_tep"
+        if row and row.get("status") == "error":
+            print(f"  note: {snap}/{name} has a data problem: {row.get('message', '')}")
     return "co"
 
 
