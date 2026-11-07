@@ -28,6 +28,7 @@ llm:
   price_in: 0.25
   price_out: 1.50
   price_date: "2026-11-07"
+<<<<<<< HEAD
 baseline:  # đối chứng không LLM (src/baseline.py); ngưỡng cố định từ trước, KHÔNG chỉnh trên 100 nhãn tay
   majority_label: positive      # mức A (sàn tham chiếu) và nhãn mặc định khi điểm quanh 0 mà không có cả hai phía
   pos_threshold: 0.05           # compound >= ngưỡng -> positive (mặc định khuyến nghị của VADER)
@@ -54,4 +55,6 @@ eval:  # chấm LLM và baseline (src/evaluate.py)
   ci_level: 0.95
   exclude_auto: true                          # loại review do hệ thống sinh khỏi cả hai phương pháp
   length_bins: [150, 400]                     # số ký tự: <=150 ngắn, 151-400 vừa, >400 dài
+=======
+>>>>>>> 2a4687ead248224b5c26b5034ac3856306575ec5
 seed: 42
