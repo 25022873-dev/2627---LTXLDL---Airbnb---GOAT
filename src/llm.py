@@ -43,7 +43,7 @@ Output: [{"i": 0, "sentiment": "mixed", "language": "en", "aspects": [{"name": "
 
 def make_schema(aspects):
     class Aspect(BaseModel):
-        name: Literal[tuple(aspects)]
+        name: Literal[tuple(aspects)] # type: ignore[reportInvalidTypeForm]
         polarity: Literal["positive", "negative"]
 
     class Item(BaseModel):
@@ -136,7 +136,7 @@ def main(config_path, args):
         client, Item = genai.Client(api_key=os.environ[L["api_key_env"]]), make_schema(L["aspects"])
         gen_cfg = types.GenerateContentConfig(system_instruction=system, temperature=0,
                                               response_mime_type="application/json", response_schema=list[Item])
-        adapter, state, t0 = TypeAdapter(list[Item]), {"last": 0.0}, time.monotonic()
+        adapter, state, t0 = TypeAdapter(list[Item]), {"last": 0.0}, time.monotonic() # type: ignore[reportInvalidTypeForm]
         for s in range(0, len(todo), L["batch_size"]):
             batch = todo[s:s + L["batch_size"]]
             got, fail = label(client, L, gen_cfg, adapter, [texts[i] for i in batch], usage, state)
