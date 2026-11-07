@@ -1,0 +1,57 @@
+city: cape_town
+data_root: south-africa/wc/cape-town
+currency: ZAR
+snapshots: [2025-09-28, 2025-12-29, 2026-03-30, 2026-06-29]
+group_code: DSE2049-C04-G04-cape-town
+ids_file: data/Phân_công_thành_phố_cho_project_cuối_kỳ.xlsx
+qa:
+  iqr_k: 1.5
+  expected:
+    listings: 1000
+    calendar: 365000
+    reviews: 5000
+    entire_home: 875
+    private_room: 125
+    zero_reviews: {2025-09-28: 50, 2025-12-29: 30, 2026-03-30: 25, 2026-06-29: 25}
+    missing_price: {2026-06-29: 20}
+    area_size: [120, 130]
+llm:
+  provider: gemini
+  model: gemini-3.1-flash-lite
+  api_key_env: GEMINI_API_KEY
+  prompt_version: v1
+  batch_size: 20
+  rpm: 5
+  retries: 5
+  max_chars: 1000
+  aspects: [location, cleanliness, host, value, amenities, noise, safety]
+  price_in: 0.25
+  price_out: 1.50
+  price_date: "2026-11-07"
+baseline:  # đối chứng không LLM (src/baseline.py); ngưỡng cố định từ trước, KHÔNG chỉnh trên 100 nhãn tay
+  majority_label: positive      # mức A (sàn tham chiếu) và nhãn mặc định khi điểm quanh 0 mà không có cả hai phía
+  pos_threshold: 0.05           # compound >= ngưỡng -> positive (mặc định khuyến nghị của VADER)
+  neg_threshold: -0.05          # compound <= ngưỡng -> negative
+  mixed_min_pos: 0.4            # mixed: tổng điểm các mệnh đề dương >= ngưỡng này ...
+  mixed_min_neg: 0.4            # ... VÀ tổng điểm (trị tuyệt đối) các mệnh đề âm >= ngưỡng này
+  aspect_threshold: 0.05        # tổng điểm các mệnh đề chứa từ khoá khía cạnh: >= ngưỡng positive, <= -ngưỡng negative
+  lang_min_chars: 20            # ngắn hơn -> language = unknown
+  lang_min_prob: 0.80           # độ tin cậy langdetect thấp hơn -> unknown
+  split_on_contrast: true       # tách mệnh đề tại từ tương phản để bắt "view đẹp nhưng ồn"
+  contrast_words: [but, however, although, though]
+  aspect_keywords:              # "*" = hậu tố tuỳ ý (clean* khớp cleaned, cleanliness); không có "*" = khớp nguyên từ
+    location: [location, located, area, neighbourhood*, neighborhood*, view*, beach*, central, walking distance, close to, close by, nearby, walk to, surroundings, restaurant*, easy access]
+    cleanliness: [clean*, spotless*, tidy, dirty, filth*, dust*, hygien*, stain*, smell*, odour*, odor*, mould*, mold*, cockroach*, bed bugs]
+    host: [host*, communicat*, check-in, check in, checkin, responsive, responded, welcoming, landlord, manager, key handover]
+    value: [value, price*, cost*, cheap*, expensive, affordable, overpriced, worth, bargain, money]
+    amenities: [wifi, wi-fi, internet, bed*, mattress*, kitchen*, bathroom*, shower*, parking, pool, hot water, aircon, air con, air-conditioning, heating, tv, towels, linen*, fridge, load shedding, generator, inverter]
+    noise: [noise*, noisy, loud*, quiet*, peaceful, peace and quiet, silent, music, traffic, soundproof*, sound proof*, party, parties]
+    safety: [safe, safety, secure*, security, unsafe, crime*, burglar*, break-in, break in, guard*, alarm, gated, electric fence, dangerous]
+eval:  # chấm LLM và baseline (src/evaluate.py)
+  hand_labels: data/samples/hand_labels.csv   # cột review_id, sentiment (positive/mixed/negative); tuỳ chọn aspect_<tên> nếu có nhãn khía cạnh
+  hand_labels_2: null                         # tuỳ chọn: tệp nhãn của người gán thứ hai (cùng định dạng) để tính Cohen's kappa
+  bootstrap: 2000                             # số lần lấy mẫu lại cho khoảng tin cậy
+  ci_level: 0.95
+  exclude_auto: true                          # loại review do hệ thống sinh khỏi cả hai phương pháp
+  length_bins: [150, 400]                     # số ký tự: <=150 ngắn, 151-400 vừa, >400 dài
+seed: 42

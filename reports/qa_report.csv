@@ -1,0 +1,161 @@
+snapshot,file,n_rows,check,category,column,n,pct,severity,detail,condition,reason,action
+2025-09-28,listings,1000,real_zero_kept,zero_value,bathrooms,1,0.1,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-09-28,listings,1000,real_zero_kept,zero_value,bedrooms,60,6.0,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-09-28,listings,1000,real_zero_kept,zero_value,beds,25,2.5,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-09-28,listings,1000,real_zero_kept,zero_value,availability_365,9,0.9,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-09-28,listings,1000,real_zero_kept,zero_value,number_of_reviews,50,5.0,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-09-28,listings,1000,cell_value,missing,host_since,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,host_is_superhost,37,3.7,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,sentinel,host_response_rate,113,11.3,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,host_response_rate,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,sentinel,host_acceptance_rate,48,4.8,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,host_acceptance_rate,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,bathrooms,37,3.7,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,bedrooms,5,0.5,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,beds,33,3.3,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,missing,price,40,4.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,structural_null,first_review,50,5.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,structural_null,last_review,50,5.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,structural_null,review_scores_rating,50,5.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,cell_value,structural_null,reviews_per_month,50,5.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,listings,1000,rows_in_out,impact,,1000,,info,"in=1000, out=1000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-09-28,listings,1000,row_count,expected_count,,1000,,ok,expected 1000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2025-09-28,listings,1000,room_type_count,expected_count,Entire home/apt,875,,ok,expected 875,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2025-09-28,listings,1000,room_type_count,expected_count,Private room,125,,ok,expected 125,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2025-09-28,listings,1000,zero_review_listings,expected_count,,50,,ok,expected 50,số listing 0 review khác kỳ vọng,lọc sai hoặc dữ liệu đổi,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A05,130,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A02,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A01,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A07,126,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A06,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A08,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A03,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,area_size,expected_count,A04,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-09-28,listings,1000,coords_outside_area,consistency,,4,0.4,warn,"ids: 17694944,942438663214629326,1318632463892611692,1353604164600786035",toạ độ ngoài hình chữ nhật analysis_area,sai toạ độ hoặc sai vùng,gắn cờ
+2025-09-28,listings,1000,iqr_outlier_log,outlier,price,27,2.7,info,"ids: 4313402,5316070,11662930,12054768,16377753","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2025-09-28,listings,1000,iqr_outlier_log,outlier,minimum_nights,54,5.4,info,"ids: 282606,4194678,4440905,4730715,4875598","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2025-09-28,listings,1000,iqr_outlier_log,outlier,accommodates,35,3.5,info,"ids: 1241945,4313402,5348655,9225891,12200911","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2025-09-28,calendar,365000,cell_value,missing,price,365000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-09-28,calendar,365000,rows_in_out,impact,,365000,,info,"in=365000, out=365000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-09-28,calendar,365000,row_count,expected_count,,365000,,ok,expected 365000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2025-09-28,reviews,5000,rows_in_out,impact,,5000,,info,"in=5000, out=5000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-09-28,reviews,5000,row_count,expected_count,,5000,,ok,expected 5000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2025-12-29,listings,1000,real_zero_kept,zero_value,bathrooms,1,0.1,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-12-29,listings,1000,real_zero_kept,zero_value,bedrooms,63,6.3,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-12-29,listings,1000,real_zero_kept,zero_value,beds,27,2.7,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-12-29,listings,1000,real_zero_kept,zero_value,availability_365,4,0.4,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-12-29,listings,1000,real_zero_kept,zero_value,number_of_reviews,30,3.0,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2025-12-29,listings,1000,cell_value,missing,host_since,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,host_is_superhost,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,host_response_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,host_acceptance_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,bathrooms,5,0.5,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,beds,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,price,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,structural_null,first_review,30,3.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,structural_null,last_review,30,3.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,out_of_range,last_review,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,structural_null,review_scores_rating,30,3.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,missing,instant_bookable,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,cell_value,structural_null,reviews_per_month,30,3.0,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2025-12-29,listings,1000,rows_in_out,impact,,1000,,info,"in=1000, out=1000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-12-29,listings,1000,row_count,expected_count,,1000,,ok,expected 1000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2025-12-29,listings,1000,room_type_count,expected_count,Entire home/apt,875,,ok,expected 875,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2025-12-29,listings,1000,room_type_count,expected_count,Private room,125,,ok,expected 125,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2025-12-29,listings,1000,zero_review_listings,expected_count,,30,,ok,expected 30,số listing 0 review khác kỳ vọng,lọc sai hoặc dữ liệu đổi,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A05,130,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A02,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A01,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A07,126,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A06,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A08,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A03,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,area_size,expected_count,A04,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2025-12-29,listings,1000,reviews0_xor_last_review,consistency,,1,0.1,warn,ids: 44640859,0 review nhưng có last_review (hoặc ngược lại),mâu thuẫn nội tại,gắn cờ
+2025-12-29,listings,1000,coords_outside_area,consistency,,4,0.4,warn,"ids: 17694944,942438663214629326,1318632463892611692,1353604164600786035",toạ độ ngoài hình chữ nhật analysis_area,sai toạ độ hoặc sai vùng,gắn cờ
+2025-12-29,listings,1000,iqr_outlier_log,outlier,minimum_nights,14,1.4,info,"ids: 282606,7446675,9426077,16224591,17137459","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2025-12-29,listings,1000,iqr_outlier_log,outlier,accommodates,32,3.2,info,"ids: 1241945,4313402,9225891,12200911,20777870","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2025-12-29,calendar,365000,column_absent,schema,price,365000,100.0,warn,,cột không có trong tệp,nguồn không cung cấp cột này,bỏ KPI cần cột đó
+2025-12-29,calendar,365000,rows_in_out,impact,,365000,,info,"in=365000, out=365000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-12-29,calendar,365000,row_count,expected_count,,365000,,ok,expected 365000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2025-12-29,reviews,5000,rows_in_out,impact,,5000,,info,"in=5000, out=5000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2025-12-29,reviews,5000,row_count,expected_count,,5000,,ok,expected 5000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-03-30,listings,1000,real_zero_kept,zero_value,bathrooms,2,0.2,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-03-30,listings,1000,real_zero_kept,zero_value,bedrooms,63,6.3,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-03-30,listings,1000,real_zero_kept,zero_value,beds,25,2.5,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-03-30,listings,1000,real_zero_kept,zero_value,number_of_reviews,25,2.5,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-03-30,listings,1000,cell_value,missing,host_since,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,host_is_superhost,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,host_response_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,host_acceptance_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,bathrooms,5,0.5,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,beds,1,0.1,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,price,20,2.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,structural_null,first_review,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,structural_null,last_review,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,out_of_range,last_review,24,2.4,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,structural_null,review_scores_rating,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,missing,instant_bookable,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,cell_value,structural_null,reviews_per_month,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-03-30,listings,1000,rows_in_out,impact,,1000,,info,"in=1000, out=1000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-03-30,listings,1000,row_count,expected_count,,1000,,ok,expected 1000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-03-30,listings,1000,room_type_count,expected_count,Entire home/apt,875,,ok,expected 875,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2026-03-30,listings,1000,room_type_count,expected_count,Private room,125,,ok,expected 125,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2026-03-30,listings,1000,zero_review_listings,expected_count,,25,,ok,expected 25,số listing 0 review khác kỳ vọng,lọc sai hoặc dữ liệu đổi,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A05,130,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A02,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A01,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A07,126,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A06,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A08,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A03,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,area_size,expected_count,A04,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-03-30,listings,1000,reviews0_xor_last_review,consistency,,24,2.4,warn,"ids: 14870295,26937181,33815929,42134128,42751523",0 review nhưng có last_review (hoặc ngược lại),mâu thuẫn nội tại,gắn cờ
+2026-03-30,listings,1000,coords_outside_area,consistency,,2,0.2,warn,"ids: 1318632463892611692,1353604164600786035",toạ độ ngoài hình chữ nhật analysis_area,sai toạ độ hoặc sai vùng,gắn cờ
+2026-03-30,listings,1000,iqr_outlier_log,outlier,price,31,3.1,info,"ids: 4313402,5316070,11662930,12054768,18456013","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-03-30,listings,1000,iqr_outlier_log,outlier,minimum_nights,6,0.6,info,"ids: 282606,4730715,7446675,7966293,53423872","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-03-30,listings,1000,iqr_outlier_log,outlier,accommodates,31,3.1,info,"ids: 1241945,4313402,9225891,12200911,20777870","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-03-30,calendar,365000,column_absent,schema,price,365000,100.0,warn,,cột không có trong tệp,nguồn không cung cấp cột này,bỏ KPI cần cột đó
+2026-03-30,calendar,365000,rows_in_out,impact,,365000,,info,"in=365000, out=365000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-03-30,calendar,365000,row_count,expected_count,,365000,,ok,expected 365000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-03-30,reviews,5000,rows_in_out,impact,,5000,,info,"in=5000, out=5000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-03-30,reviews,5000,row_count,expected_count,,5000,,ok,expected 5000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-06-29,listings,1000,real_zero_kept,zero_value,bedrooms,1,0.1,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-06-29,listings,1000,real_zero_kept,zero_value,availability_365,13,1.3,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-06-29,listings,1000,real_zero_kept,zero_value,number_of_reviews,25,2.5,info,,giá trị đúng bằng 0,0 có thể là giá trị thật,"giữ nguyên, chỉ thống kê"
+2026-06-29,listings,1000,cell_value,missing,host_since,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,host_response_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,host_acceptance_rate,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,bathrooms,75,7.5,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,bedrooms,147,14.7,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,beds,48,4.8,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,price,20,2.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,structural_null,first_review,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,structural_null,last_review,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,out_of_range,last_review,14,1.4,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,structural_null,review_scores_rating,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,missing,instant_bookable,1000,100.0,warn,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,cell_value,structural_null,reviews_per_month,25,2.5,info,,ô rỗng / sentinel / không parse được / ngoài khoảng,giá trị không dùng được,"đặt NA, giữ dòng"
+2026-06-29,listings,1000,rows_in_out,impact,,1000,,info,"in=1000, out=1000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-06-29,listings,1000,row_count,expected_count,,1000,,ok,expected 1000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-06-29,listings,1000,room_type_count,expected_count,Entire home/apt,875,,ok,expected 875,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2026-06-29,listings,1000,room_type_count,expected_count,Private room,125,,ok,expected 125,số loại phòng khác kỳ vọng,lọc sai hoặc danh mục lệch,dừng và kiểm tra
+2026-06-29,listings,1000,zero_review_listings,expected_count,,25,,ok,expected 25,số listing 0 review khác kỳ vọng,lọc sai hoặc dữ liệu đổi,dừng và kiểm tra
+2026-06-29,listings,1000,missing_price,expected_count,price,20,,ok,expected 20,số listing thiếu price khác kỳ vọng,lọc sai hoặc price rỗng,loại khỏi KPI giá
+2026-06-29,listings,1000,area_size,expected_count,A05,130,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A02,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A01,129,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A07,126,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A06,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A08,123,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A04,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,area_size,expected_count,A03,120,,ok,"expected [120, 130]",số listing mỗi vùng ngoài khoảng cho phép,lọc sai hoặc gán vùng sai,dừng và kiểm tra
+2026-06-29,listings,1000,reviews0_xor_last_review,consistency,,14,1.4,warn,"ids: 12160257,17723213,39691305,47063132,49924752",0 review nhưng có last_review (hoặc ngược lại),mâu thuẫn nội tại,gắn cờ
+2026-06-29,listings,1000,iqr_outlier_log,outlier,price,32,3.2,info,"ids: 4313402,5316070,11662930,16377753,20777870","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-06-29,listings,1000,iqr_outlier_log,outlier,minimum_nights,11,1.1,info,"ids: 4730715,282606,7446675,9426077,22171693","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-06-29,listings,1000,iqr_outlier_log,outlier,accommodates,31,3.1,info,"ids: 1241945,4313402,9225891,12200911,20777870","ngoài q1-k*IQR..q3+k*IQR trên log1p, theo room_type",có thể nhập sai,chỉ gắn cờ
+2026-06-29,calendar,365000,column_absent,schema,price,365000,100.0,warn,,cột không có trong tệp,nguồn không cung cấp cột này,bỏ KPI cần cột đó
+2026-06-29,calendar,365000,rows_in_out,impact,,365000,,info,"in=365000, out=365000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-06-29,calendar,365000,row_count,expected_count,,365000,,ok,expected 365000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra
+2026-06-29,reviews,5000,rows_in_out,impact,,5000,,info,"in=5000, out=5000",số dòng trước và sau làm sạch,đo tác động QA,ghi nhận
+2026-06-29,reviews,5000,row_count,expected_count,,5000,,ok,expected 5000,số dòng khác kỳ vọng của đề,lọc sai hoặc đọc sai ID,dừng và kiểm tra

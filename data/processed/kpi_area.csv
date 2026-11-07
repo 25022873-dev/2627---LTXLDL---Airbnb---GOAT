@@ -1,0 +1,95 @@
+kpi,snapshot,level,group,value,n,currency
+median_price,2026-06-29,analysis_area,A01 | Entire home/apt,2973.0550000000003,116,ZAR
+median_price,2026-06-29,analysis_area,A01 | Private room,1207.5,12,ZAR
+median_price,2026-06-29,analysis_area,A02 | Entire home/apt,2049.25,110,ZAR
+median_price,2026-06-29,analysis_area,A02 | Private room,861.75,14,ZAR
+median_price,2026-06-29,analysis_area,A03 | Entire home/apt,2065.75,100,ZAR
+median_price,2026-06-29,analysis_area,A03 | Private room,843.165,18,ZAR
+median_price,2026-06-29,analysis_area,A04 | Entire home/apt,1450.0,97,ZAR
+median_price,2026-06-29,analysis_area,A04 | Private room,733.75,22,ZAR
+median_price,2026-06-29,analysis_area,A05 | Entire home/apt,1774.53,115,ZAR
+median_price,2026-06-29,analysis_area,A05 | Private room,1014.0350000000001,12,ZAR
+median_price,2026-06-29,analysis_area,A06 | Entire home/apt,1768.165,116,ZAR
+median_price,2026-06-29,analysis_area,A07 | Entire home/apt,1673.75,112,ZAR
+median_price,2026-06-29,analysis_area,A07 | Private room,861.25,10,ZAR
+median_price,2026-06-29,analysis_area,A08 | Entire home/apt,1395.425,90,ZAR
+median_price,2026-06-29,analysis_area,A08 | Private room,790.0,31,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 107 | Entire home/apt,1952.085,26,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 113 | Entire home/apt,1557.7,12,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 115 | Entire home/apt,1670.0,209,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 115 | Private room,870.665,14,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 15 | Entire home/apt,1457.0,12,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 23 | Entire home/apt,1672.5,44,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 4 | Entire home/apt,1478.5,11,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 54 | Entire home/apt,2232.0,140,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 54 | Private room,1309.25,17,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 55 | Entire home/apt,1613.25,30,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 58 | Entire home/apt,1154.25,14,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 59 | Entire home/apt,2077.0,13,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 61 | Entire home/apt,2368.335,42,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 62 | Entire home/apt,3057.5,26,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 64 | Entire home/apt,1950.875,48,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 69 | Entire home/apt,2853.0,21,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 71 | Entire home/apt,2025.71,11,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 74 | Entire home/apt,3420.6949999999997,36,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 77 | Entire home/apt,1744.0,49,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 83 | Entire home/apt,1548.0,15,ZAR
+median_price,2026-06-29,neighbourhood_cleansed,Ward 84 | Entire home/apt,1273.5,11,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A01,262766.6465517241,128,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A02,154479.4684659091,124,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A03,102779.36827586207,118,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A04,67965.51724137932,119,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A05,171093.75,127,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A06,141324.22413793104,121,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A07,99394.57643678162,122,ZAR
+est_revenue_per_listing,2026-06-29,analysis_area,A08,45645.97701149425,121,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 1,8585.8908045977,11,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 107,50174.91379310344,29,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 113,39470.34482758621,16,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 115,101948.27586206897,223,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 15,23032.758620689656,14,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 23,113947.12643678162,51,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 4,41744.25287356322,13,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 54,208649.94252873564,157,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 55,128169.54022988507,31,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 57,132734.1379310345,12,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 58,97778.36762452108,16,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 59,124666.37931034483,19,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 61,195443.61746093244,46,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 62,171384.0909090909,27,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 64,129598.71109389124,54,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 69,449841.9943820225,23,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 71,169511.0344827586,13,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 74,174474.2651685393,41,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 77,145250.8405988767,56,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 83,51813.2183908046,16,ZAR
+est_revenue_per_listing,2026-06-29,neighbourhood_cleansed,Ward 84,23536.206896551725,14,ZAR
+review_score_median,2026-06-29,analysis_area,A01,4.9,128,
+review_score_median,2026-06-29,analysis_area,A02,4.835,128,
+review_score_median,2026-06-29,analysis_area,A03,4.91,117,
+review_score_median,2026-06-29,analysis_area,A04,4.88,117,
+review_score_median,2026-06-29,analysis_area,A05,4.83,128,
+review_score_median,2026-06-29,analysis_area,A06,4.82,121,
+review_score_median,2026-06-29,analysis_area,A07,4.83,120,
+review_score_median,2026-06-29,analysis_area,A08,4.87,116,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 1,4.95,11,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 107,4.85,29,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 113,4.93,16,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 115,4.78,225,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 15,4.88,13,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 23,4.83,49,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 4,4.81,13,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 54,4.84,159,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 55,4.83,28,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 57,4.869999999999999,12,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 58,4.965,16,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 59,4.95,19,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 61,4.92,47,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 62,4.93,27,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 64,4.88,53,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 69,4.94,23,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 71,5.0,13,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 74,4.89,41,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 77,4.86,58,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 83,4.825,16,
+review_score_median,2026-06-29,neighbourhood_cleansed,Ward 84,4.92,14,

@@ -1,0 +1,20 @@
+{
+  "calls": 1,
+  "prompt_tokens": 1728,
+  "output_tokens": 1036,
+  "reviews_sent": 20,
+  "seconds": 10.25,
+  "city_reviews": 664377,
+  "model": "gemini-3.1-flash-lite",
+  "prompt_version": "v1:83ce18",
+  "reviews_ok": 20,
+  "reviews_error": 0,
+  "reviews_empty": 0,
+  "error_rate": 0.0,
+  "reviews_truncated": 0,
+  "avg_tokens_in": 86.4,
+  "avg_tokens_out": 51.8,
+  "est_cost_usd_input": 14.3505432,
+  "est_cost_usd_output": 51.622092900000005,
+  "price_assumption": "gemini-3.1-flash-lite: 0.25/1.5 USD mỗi 1M token (vào/ra), tra ngày 2026-11-07"
+}
