@@ -1,4 +1,31 @@
 city: cape_town
-data_root: south-africa/wc/cape-town   
+data_root: south-africa/wc/cape-town
 currency: ZAR
 snapshots: [2025-09-28, 2025-12-29, 2026-03-30, 2026-06-29]
+group_code: DSE2049-C04-G04-cape-town
+ids_file: data/Phân_công_thành_phố_cho_project_cuối_kỳ.xlsx
+qa:
+  iqr_k: 1.5
+  expected:
+    listings: 1000
+    calendar: 365000
+    reviews: 5000
+    entire_home: 875
+    private_room: 125
+    zero_reviews: {2025-09-28: 50, 2025-12-29: 30, 2026-03-30: 25, 2026-06-29: 25}
+    missing_price: {2026-06-29: 20}
+    area_size: [120, 130]
+llm:
+  provider: gemini
+  model: gemini-3.1-flash-lite
+  api_key_env: GEMINI_API_KEY
+  prompt_version: v1
+  batch_size: 20
+  rpm: 5
+  retries: 5
+  max_chars: 1000
+  aspects: [location, cleanliness, host, value, amenities, noise, safety]
+  price_in: 0.25
+  price_out: 1.50
+  price_date: "2026-11-07"
+seed: 42
