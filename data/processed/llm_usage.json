@@ -3,7 +3,7 @@
   "prompt_tokens": 92436,
   "output_tokens": 76562,
   "reviews_sent": 1000,
-  "seconds": 635.7970000000205,
+  "seconds": 641.640000000014,
   "model": "gemini-3.1-flash-lite",
   "prompt_version": "v1:83ce18",
   "reviews_ok": 1000,
