@@ -8,3 +8,5 @@ pydantic==2.14.3
 PyYAML==6.0.3
 requests==2.34.2
 urllib3==2.8.0
+langdetect==1.0.9
+vaderSentiment==3.3.2
