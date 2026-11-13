@@ -82,11 +82,10 @@ def fig4_seasonality(cfg):
     d = kpi("time", "reviews_per_month")
     tot = d.assign(m=d["group"].str[-7:]).groupby("m")["value"].sum().sort_index().iloc[:-1].iloc[-36:]  # bỏ tháng cuối (cụt)
     by = tot.groupby(tot.index.str[5:].astype(int)).mean()
-    f, axs = plt.subplots(1, 2, figsize=(10, 4.2), gridspec_kw={"width_ratios": [3, 2]})
-    axs[0].bar([calendar.month_abbr[m] for m in by.index], by.values, color=BLUE)
-    axs[0].set_ylabel("Reviews per month (all areas)"), axs[0].set_title("Reviews by calendar month")
-    barh(axs[1], kpi("time", "seasonality_ratio"), "Seasonality ratio by area", "Max / min monthly occupancy")
-    return f, "When is the peak season? Left: mean reviews per month, last 3 full years (proxy for stays)."
+    f, ax = plt.subplots(figsize=(6, 4.2))
+    ax.bar([calendar.month_abbr[m] for m in by.index], by.values, color=BLUE)
+    ax.set_ylabel("Reviews per month (all areas)"), ax.set_title("Reviews by calendar month")
+    return f, "When is the peak season? Mean reviews per month, last 3 full years (proxy for stays)."
 
 
 def fig5_net_sentiment(cfg):
@@ -99,7 +98,7 @@ def fig5_net_sentiment(cfg):
 def fig6_llm_vs_baseline(cfg):
     raw = pd.read_csv(P / "eval_metrics.csv")
     raw = raw[raw["group"] == "all"]
-    E, order = raw.pivot(index="method", columns="metric", values="value"), [m for m in NAMES if m in set(raw["method"])]
+    E, order = raw.pivot(index="method", columns="metric", values="value"), list(NAMES)
     f, ax = plt.subplots(figsize=(6, 4))
     x, w = np.arange(len(order)), 0.38
     for j, k in enumerate(("accuracy", "macro_f1")):
@@ -115,7 +114,7 @@ def fig6_llm_vs_baseline(cfg):
 
 def fig7_confusion(cfg):
     C = pd.read_csv(P / "eval_confusion.csv")
-    ms = [m for m in ("llm", "baseline") if m in set(C["method"])]
+    ms = ["llm", "baseline"]
     f, axs = plt.subplots(1, len(ms), figsize=(4.5 * len(ms), 4), squeeze=False)
     for ax, m in zip(axs[0], ms):
         t = C[C["method"] == m].pivot_table(index="label", columns="pred", values="count", fill_value=0)

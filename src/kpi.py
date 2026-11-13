@@ -3,7 +3,7 @@
 Chạy: python src/kpi.py configs/cape_town.yaml   (sau llm.py)
 Ra:   data/processed/kpi_area.csv, kpi_time.csv, kpi_llm.csv, kpi_qa_impact.csv
 Dạng dài: kpi, snapshot, level, group, value, n, currency (tỉ lệ lưu dạng 0-1).
-KPI 6-7 đọc data/processed/llm_results.csv do llm.py sinh; thiếu tệp thì dừng."""
+KPI 5 đọc data/processed/llm_results.csv do llm.py sinh; thiếu tệp thì dừng."""
 import sys
 
 import pandas as pd
@@ -59,18 +59,12 @@ def qa_impact(cfg, root, snap, L, C):
     return imp.rename_axis("kpi").reset_index()
 
 
-def llm_kpis(f, R, snap, cur):
-    """KPI 6-7 từ llm_results.csv (dạng rộng: sentiment + cột aspect_*); R = review của mốc kèm khu vực."""
+def net_sentiment(f, R, snap, cur):
+    """KPI 5 từ llm_results.csv: điểm cảm xúc trung bình (positive +1, mixed 0, negative -1); R = review của mốc kèm khu vực."""
     r = pd.read_csv(f, dtype={"review_id": "int64"})
     z = r[r["status"] == "ok"].merge(R, left_on="review_id", right_on="id")  # bỏ review lỗi/rỗng
     z["score"] = z["sentiment"].map({"positive": 1, "mixed": 0, "negative": -1})
-    out = agg(z, [], "score", "mean", "net_sentiment", snap, cur)
-    cols = [c for c in z if c.startswith("aspect_")]
-    a = z.melt(id_vars="analysis_area", value_vars=cols, var_name="aspect", value_name="pol").dropna(subset=["pol"])
-    a["aspect"] = a["aspect"].str.removeprefix("aspect_")
-    neg = a.assign(neg=a["pol"].eq("negative")).groupby(["analysis_area", "aspect"])["neg"].agg(value="mean", n="count")
-    neg = neg[neg["n"] >= MIN_N]
-    return out + [tidy(neg.loc[neg.groupby(level=0)["value"].idxmax()], "top_negative_aspect", snap, "analysis_area", cur)]
+    return agg(z, [], "score", "mean", "net_sentiment", snap, cur)
 
 
 def main(config):
@@ -94,20 +88,11 @@ def main(config):
             per["rev"] = per["price"] * per["occ"] * 365
             area += agg(per, [], "rev", "median", "est_revenue_per_listing", snap, cur)  # KPI 3
             qa_impact(cfg, root, snap, L, C).to_csv(base / "kpi_qa_impact.csv", index=False)
-        area += agg(per, [], "review_scores_rating", "median", "review_score_median", snap, cur)  # KPI 5a
-
-        c = C.merge(L[["id", "analysis_area"]], left_on="listing_id", right_on="id")  # KPI 4: biên độ mùa vụ
-        c["m"], c["busy"] = c["date"].dt.to_period("M").astype(str), (~c["available"]).astype(float)
-        days = c.groupby("m")["date"].nunique()  # chỉ giữ tháng đủ ngày (tháng đầu/cuối của lịch bị cụt)
-        mo = c[c["m"].isin(days[days >= 28].index)].groupby(["analysis_area", "m"])["busy"].mean().groupby(level=0)
-        season = pd.DataFrame({"value": mo.max() / mo.min().where(lambda s: s > 0), "n": L.groupby("analysis_area").size()})
-        over_time.append(tidy(season, "seasonality_ratio", snap, "analysis_area", cur))
-
         R = load(snap, "reviews").merge(per[LEVELS], left_on="listing_id", right_index=True)
         R["m"] = R["date"].dt.to_period("M").astype(str)
-        over_time += agg(R, ["m"], "id", "count", "reviews_per_month", snap, cur, min_n=1, levels=LEVELS[:1])  # KPI 5b
+        over_time += agg(R, ["m"], "id", "count", "reviews_per_month", snap, cur, min_n=1, levels=LEVELS[:1])  # KPI 4
 
-        llm += llm_kpis(llm_file, R, snap, cur)  # KPI 6-7
+        llm += net_sentiment(llm_file, R, snap, cur)  # KPI 5
 
     for name, parts in (("area", area), ("time", over_time), ("llm", llm)):
         pd.concat(parts).to_csv(base / f"kpi_{name}.csv", index=False)

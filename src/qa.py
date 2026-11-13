@@ -244,13 +244,8 @@ def main(config):
     cfg = yaml.safe_load(open(config, encoding="utf-8"))
     root, qa = cfg["data_root"].strip("/ "), cfg["qa"]
     exp = dict(qa["expected"])
-    snaps = [str(s) for s in cfg["snapshots"]]
-    if "missing_price_last" in exp:  # chỉ mốc cuối có cột price
-        exp["missing_price"] = {snaps[-1]: exp.pop("missing_price_last")}
-    for k in ("zero_reviews", "missing_price"):
-        v = exp.get(k, {})
-        # list: theo thứ tự mốc; dict: khoá ngày (YAML có thể biến khoá thành kiểu date)
-        exp[k] = dict(zip(snaps, v)) if isinstance(v, list) else {str(d): n for d, n in v.items()}
+    for k in ("zero_reviews", "missing_price"):  # YAML có thể biến khoá ngày thành kiểu date
+        exp[k] = {str(d): n for d, n in exp.get(k, {}).items()}
     refs = load_refs(cfg)
     for snap in map(str, cfg["snapshots"]):
         for name in TYPES:
@@ -264,7 +259,7 @@ def main(config):
             df, rejected = clean(name, raw, snap, ctx)
             add(ctx, "rows_in_out", "impact", len(df), severity="info", detail=f"in={len(raw)}, out={len(df)}")
             df = checks(name, df, ctx, refs, exp)
-            flag_outliers(name, df, ctx, qa.get("iqr_k", 3.0))
+            flag_outliers(name, df, ctx, qa["iqr_k"])
             out = ROOT / "data/processed" / root / snap
             out.mkdir(parents=True, exist_ok=True)
             df.to_parquet(out / f"{name}.parquet", index=False)

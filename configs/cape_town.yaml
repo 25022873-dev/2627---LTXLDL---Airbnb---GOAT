@@ -16,7 +16,6 @@ qa:
     missing_price: {2026-06-29: 20}
     area_size: [120, 130]
 llm:
-  provider: gemini
   model: gemini-3.1-flash-lite
   api_key_env: GEMINI_API_KEY
   prompt_version: v1
@@ -33,16 +32,7 @@ baseline:
   thr: 0.05          # ngưỡng mặc định của VADER, không chỉnh trên nhãn tay
   mixed_min: 0.4     # mệnh đề có |điểm| >= giá trị này mới tính là khen/chê rõ
   default: positive  # nhãn phổ biến nhất khi không có tín hiệu
-  lang_min_chars: 20
-  lang_min_prob: 0.7
-  keywords:
-    location: [location, located, area, neighbourhood, view, walk, close to, central]
-    cleanliness: [clean, spotless, dirty, filthy, dust, smell, stain]
-    host: [host, communicat, check-in, check in, responsive, welcom]
-    value: [value, price, cost, expensive, cheap, worth, overpriced]
-    amenities: [amenit, wifi, wi-fi, parking, bed, kitchen, shower, equipped, pool]
-    noise: [noise, noisy, loud, quiet, peaceful, music]
-    safety: [safe, safety, secure, unsafe, crime, dangerous, lock]
 eval:
   labels: data/samples/hand_labels.csv   # cột: review_id, label
+  n_labels: 100
   bootstrap: 2000

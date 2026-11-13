@@ -1,8 +1,8 @@
-"""Gán nhãn các review «Mẫu LLM» bằng Gemini: gọi theo lô, có cache, chạy dở có thể chạy tiếp.
+"""Gán nhãn các review «Mẫu LLM» bằng Gemini: gọi theo lô, có cache, chạy dở có thể chạy tiếp (review lỗi được thử lại).
 
-Chạy: python src/llm.py configs/cape_town.yaml [--skip-llm] [--limit N] [--retry-errors]
+Chạy: python src/llm.py configs/cape_town.yaml [--skip-llm] [--limit N]
 Ra:   data/processed/llm_cache.jsonl (mỗi dòng một review), llm_results.csv (bảng phẳng cho KPI/viz),
-      llm_usage.json (token, thời gian, tỉ lệ lỗi, ước tính chi phí cả thành phố)
+      llm_usage.json (token, tỉ lệ lỗi, ước tính chi phí cả thành phố)
 Khoá API: biến môi trường GEMINI_API_KEY (đổi tên ở llm.api_key_env). --skip-llm: không gọi API, không cần khoá."""
 import argparse
 import hashlib
@@ -55,9 +55,8 @@ def make_schema(aspects):
 
 
 def clean(text, max_chars):
-    """Bỏ thẻ HTML, gọn khoảng trắng, cắt độ dài -> (văn bản, có bị cắt?)."""
-    t = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text if isinstance(text, str) else "")).strip()
-    return t[:max_chars], len(t) > max_chars
+    """Bỏ thẻ HTML, gọn khoảng trắng, cắt độ dài."""
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text if isinstance(text, str) else "")).strip()[:max_chars]
 
 
 def label(client, L, config, adapter, texts, usage, state):
@@ -100,10 +99,7 @@ def main(config_path, args):
     ref = load_refs(cfg)["review"]  # cache do qa.py tạo; cột «Mẫu LLM» đánh dấu x
     ids = [int(x) for x in ref.loc[ref["Mẫu LLM"].str.lower() == "x", "review_id"]][:args.limit]
     comments = pd.read_parquet(out / root / snap0 / "reviews.parquet").set_index("id")["comments"]
-    cut, texts = 0, {}
-    for rid in ids:
-        texts[rid], c = clean(comments.get(rid), L["max_chars"])
-        cut += c
+    texts = {rid: clean(comments.get(rid), L["max_chars"]) for rid in ids}
 
     system = PROMPT.replace("ASPECTS", ", ".join(f"{a} ({HINTS[a]})" if a in HINTS else a for a in L["aspects"]))
     pv = f"{L['prompt_version']}:{hashlib.sha1(system.encode()).hexdigest()[:6]}"  # sửa prompt -> cache cũ không bị dùng nhầm
@@ -115,18 +111,18 @@ def main(config_path, args):
             r = json.loads(line)
             if all(r.get(k) == v for k, v in key.items()):
                 rec[r["review_id"]] = r
-    usage = {"calls": 0, "prompt_tokens": 0, "output_tokens": 0, "reviews_sent": 0, "seconds": 0.0}
+    usage = {"calls": 0, "prompt_tokens": 0, "output_tokens": 0, "reviews_sent": 0, "city_reviews": None}
     if usage_file.exists():  # cộng dồn qua các lần chạy dở
         old = json.load(open(usage_file, encoding="utf-8"))
         if all(old.get(k) == v for k, v in key.items()):
-            usage.update({k: old[k] for k in usage if k in old}, city_reviews=old.get("city_reviews"))
+            usage.update({k: old[k] for k in usage if k in old})
 
     def add(rid, **fields):  # ghi nối ngay vào cache
         rec[rid] = {"review_id": rid, **key, **fields}
         with open(cache_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec[rid], ensure_ascii=False) + "\n")
 
-    todo = [] if args.skip_llm else [i for i in ids if i not in rec or (args.retry_errors and rec[i]["status"] == "error")]
+    todo = [] if args.skip_llm else [i for i in ids if i not in rec or rec[i]["status"] == "error"]
     for rid in [i for i in todo if not texts[i]]:
         add(rid, status="empty")
     todo, aborted = [i for i in todo if texts[i]], None
@@ -136,7 +132,7 @@ def main(config_path, args):
         client, Item = genai.Client(api_key=os.environ[L["api_key_env"]]), make_schema(L["aspects"])
         gen_cfg = types.GenerateContentConfig(system_instruction=system, temperature=0,
                                               response_mime_type="application/json", response_schema=list[Item])
-        adapter, state, t0 = TypeAdapter(list[Item]), {"last": 0.0}, time.monotonic() # type: ignore[reportInvalidTypeForm]
+        adapter, state = TypeAdapter(list[Item]), {"last": 0.0} # type: ignore[reportInvalidTypeForm]
         for s in range(0, len(todo), L["batch_size"]):
             batch = todo[s:s + L["batch_size"]]
             got, fail = label(client, L, gen_cfg, adapter, [texts[i] for i in batch], usage, state)
@@ -152,7 +148,6 @@ def main(config_path, args):
                 else:
                     add(rid, status="error", error="đầu ra thiếu hoặc không hợp lệ sau khi thử lại")
             print(f"[{min(s + len(batch), len(todo))}/{len(todo)}] đã gắn nhãn")
-        usage["seconds"] += time.monotonic() - t0
 
     rows = [{"review_id": i, "sentiment": rec[i].get("sentiment"), "language": rec[i].get("language"),
              "status": rec[i]["status"], "auto_generated": bool(AUTO.match(texts[i])),
@@ -160,17 +155,16 @@ def main(config_path, args):
     pd.DataFrame(rows).to_csv(out / "llm_results.csv", index=False)
 
     n_ok, n_err = sum(r["status"] == "ok" for r in rec.values()), sum(r["status"] == "error" for r in rec.values())
-    usage.update(key, reviews_ok=n_ok, reviews_error=n_err, reviews_empty=len(rec) - n_ok - n_err,
-                 error_rate=n_err / max(n_ok + n_err, 1), reviews_truncated=cut)
-    if usage["reviews_sent"] and L.get("price_in") is not None:  # ước tính chi phí nếu chạy hết review của thành phố
-        raw = build_path(root, snap0, "reviews.csv.gz")
-        if usage.get("city_reviews") is None and raw.exists():
+    usage.update(key, reviews_ok=n_ok, reviews_error=n_err, error_rate=n_err / max(n_ok + n_err, 1))
+    if usage["reviews_sent"]:  # ước tính chi phí nếu chạy hết review của thành phố
+        if usage["city_reviews"] is None:
+            raw = build_path(root, snap0, "reviews.csv.gz")
             usage["city_reviews"] = sum(len(c) for c in pd.read_csv(raw, usecols=["id"], chunksize=1_000_000))
         ai, ao = (usage[k] / usage["reviews_sent"] for k in ("prompt_tokens", "output_tokens"))
-        n = usage["city_reviews"] or 0
+        n = usage["city_reviews"]
         usage.update(avg_tokens_in=ai, avg_tokens_out=ao, est_cost_usd_input=n * ai * L["price_in"] / 1e6,
                      est_cost_usd_output=n * ao * L["price_out"] / 1e6,
-                     price_assumption=f"{L['model']}: {L['price_in']}/{L['price_out']} USD mỗi 1M token (vào/ra), tra ngày {L.get('price_date')}")
+                     price_assumption=f"{L['model']}: {L['price_in']}/{L['price_out']} USD mỗi 1M token (vào/ra), tra ngày {L['price_date']}")
     json.dump(usage, open(usage_file, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     print(f"Done: ok={n_ok}, error={n_err}, còn thiếu={len(ids) - len([i for i in ids if i in rec])} -> llm_results.csv")
     if aborted:
@@ -183,6 +177,5 @@ if __name__ == "__main__":
     ap.add_argument("config", nargs="?", default="configs/cape_town.yaml")
     ap.add_argument("--skip-llm", action="store_true", help="không gọi API, chỉ đọc cache và sinh llm_results.csv")
     ap.add_argument("--limit", type=int, help="chỉ xử lý N review đầu (thử nhanh)")
-    ap.add_argument("--retry-errors", action="store_true", help="thử lại các review đang có status = error")
     a = ap.parse_args()
     sys.exit(main(a.config, a))
