@@ -1,11 +1,7 @@
-"""Chấm LLM vs baseline (và mức sàn A) trên nhãn tay. Chỉ đọc kết quả có sẵn, không gọi API.
-
-Chạy: python src/evaluate.py configs/cape_town.yaml
-Tệp nhãn tay mặc định data/samples/hand_labels.csv (review_id, comments, label ∈ positive/mixed/negative).
-Chưa có thì tự tạo từ «Mẫu LLM» (n_labels dòng, seed từ YAML), bạn điền cột label rồi chạy lại.
-YAML: eval.labels (đường dẫn), eval.n_labels (số nhãn cần tạo), eval.bootstrap (số lần lấy mẫu lại).
-Ra:   data/processed/eval_metrics.csv (method, group, metric, value, n), eval_confusion.csv, eval_errors.csv
-Quy ước: review mà phương pháp không trả nhãn hợp lệ (status != ok, thiếu trong kết quả) tính là SAI."""
+"""Chấm LLM, baseline và mức sàn (luôn đoán lớp phổ biến nhất) trên nhãn tay: python src/evaluate.py configs/cape_town.yaml
+Chưa có tệp nhãn tay thì tạo bảng mẫu (cột label trống) rồi dừng. Quy ước: review mà phương pháp không trả nhãn hợp lệ (lỗi/rỗng) tính là SAI.
+Ra: data/processed/eval_metrics.csv (method, group, metric, value, n), eval_confusion.csv, eval_errors.csv."""
+import random
 import sys
 
 import numpy as np
@@ -16,113 +12,118 @@ from download import ROOT
 from llm import clean
 from qa import load_refs
 
-CLASSES = ["positive", "mixed", "negative"]
+CLASSES, METHODS = ["positive", "mixed", "negative"], ["llm", "baseline", "floor"]
+CI_NAMES = ["accuracy_ci_lo", "accuracy_ci_hi", "macro_f1_ci_lo", "macro_f1_ci_hi"]
 
 
 def f1(y, p, c):
-    d = np.sum(y == c) + np.sum(p == c)
+    """F1 của lớp c = 2TP / (số dự đoán c + số thật c)."""
+    d = np.sum(p == c) + np.sum(y == c)
     return 2 * np.sum((y == c) & (p == c)) / d if d else 0.0
 
 
-def macro_f1(y, p, classes):
-    return np.mean([f1(y, p, c) for c in classes])
+def macro_f1(y, p):
+    """Trung bình F1 trên các lớp thực sự có trong nhãn tay."""
+    return float(np.mean([f1(y, p, c) for c in np.unique(y)]))
 
 
-def metrics(y, p, per_class):
-    classes = [c for c in CLASSES if (y == c).any()]  # chỉ lớp có trong nhãn tay
-    rows = [("accuracy", np.mean(y == p), len(y)), ("macro_f1", macro_f1(y, p, classes), len(y))]
-    for c in classes if per_class else []:
+def metrics(y, p, full=False):
+    """Các dòng (metric, value, n): accuracy, macro-F1; full=True thêm precision/recall/F1 từng lớp, n = số review thật của lớp."""
+    rows = [("accuracy", np.mean(y == p), len(y)), ("macro_f1", macro_f1(y, p), len(y))]
+    for c in np.unique(y) if full else []:
         tp, ns, npred = np.sum((y == c) & (p == c)), np.sum(y == c), np.sum(p == c)
-        rows += [(f"precision_{c}", tp / npred if npred else 0.0, ns), (f"recall_{c}", tp / ns, ns),
-                 (f"f1_{c}", f1(y, p, c), ns)]  # n = số review thật của lớp
+        rows += [(f"precision_{c}", tp / npred if npred else 0.0, ns), (f"recall_{c}", tp / ns, ns), (f"f1_{c}", f1(y, p, c), ns)]
     return rows
 
 
 def kappa(a, b):
-    po = np.mean(a == b)
-    pe = sum(np.mean(a == c) * np.mean(b == c) for c in CLASSES)
-    return (po - pe) / (1 - pe)
+    """Cohen's kappa: mức đồng thuận của a và b vượt trên mức ngẫu nhiên."""
+    pe = sum(np.mean(a == c) * np.mean(b == c) for c in np.union1d(a, b))
+    return float((np.mean(a == b) - pe) / (1 - pe)) if pe < 1 else 1.0
 
 
-def make_sheet(cfg, path, comments):
-    """Tạo tệp nhãn tay (ngẫu nhiên từ «Mẫu LLM», cố định theo seed) rồi dừng để người dùng điền nhãn."""
+def boot(y, preds, B, seed):
+    """Bootstrap B lần (mọi phương pháp dùng chung phép mẫu lại): CI 95% của accuracy, macro-F1 và chênh lệch llm - baseline."""
+    idx = np.random.default_rng(seed).integers(0, len(y), (B, len(y)))
+    st = {m: np.array([[np.mean(y[i] == p[i]), macro_f1(y[i], p[i])] for i in idx]) for m, p in preds.items()}
+    st["diff"] = st["llm"] - st["baseline"]
+    return {m: np.percentile(v, [2.5, 97.5], axis=0).T.ravel() for m, v in st.items()}  # theo thứ tự CI_NAMES
+
+
+def texts(cfg, ids):
+    """Văn bản đã clean() của các review (cùng bước làm sạch với llm.py và baseline.py)."""
+    rv = pd.read_csv(ROOT / "data" / "processed" / "reviews_clean.csv", usecols=["id", "comments"]).set_index("id")["comments"]
+    return {i: clean(rv.get(i), cfg["llm"]["max_chars"]) for i in ids}
+
+
+def make_sheet(cfg, path):
+    """Tạo bảng nhãn tay: ưu tiên các review đánh dấu «Nhãn tay» trong Excel; không có thì lấy ngẫu nhiên (seed cố định) từ «Mẫu LLM»."""
     ref = load_refs(cfg)["review"]
-    ids = [int(x) for x in ref.loc[ref["Mẫu LLM"].str.lower() == "x", "review_id"]]
-    ids = np.random.default_rng(cfg["seed"]).choice(ids, cfg["eval"]["n_labels"], replace=False)
+    sample, marked = (ref.loc[ref[c].str.lower().eq("x"), "review_id"].astype(int).tolist() for c in ("Mẫu LLM", "Nhãn tay"))
+    text = texts(cfg, sorted(marked or sample))
+    ok = [i for i, t in text.items() if t]
+    ids = random.Random(cfg["seed"]).sample(ok, min(cfg["eval"]["n_labels"], len(ok)))
     path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame({"review_id": ids, "comments": [clean(comments.get(i), cfg["llm"]["max_chars"]) for i in ids],
-                  "label": ""}).to_csv(path, index=False, encoding="utf-8-sig")
-    sys.exit(f"Đã tạo {path}. Điền cột label (positive/mixed/negative) rồi chạy lại.\n"
-             "Mở bằng VS Code hoặc Excel (Data > From Text/CSV, cột review_id chọn Text); mở thẳng bằng Excel sẽ làm hỏng ID.")
+    pd.DataFrame({"review_id": ids, "label": "", "text": [text[i] for i in ids]}).to_csv(path, index=False, encoding="utf-8-sig")
 
 
 def main(config_path):
-    cfg = yaml.safe_load(open(config_path, encoding="utf-8"))
-    E, root, snap0 = cfg["eval"], cfg["data_root"].strip("/ "), str(cfg["snapshots"][0])
-    out = ROOT / "data/processed"
-    comments = pd.read_parquet(out / root / snap0 / "reviews.parquet").set_index("id")["comments"]
-
+    with open(config_path, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    E, proc = cfg["eval"], ROOT / "data" / "processed"
     path = ROOT / E["labels"]
     if not path.exists():
-        make_sheet(cfg, path, comments)
-    lab = pd.read_csv(path, dtype={"review_id": "int64"}, usecols=["review_id", "label"])
-    lab["label"] = lab["label"].astype(str).str.strip().str.lower()
-    if lab["review_id"].duplicated().any() or not lab["label"].isin(CLASSES).all():
-        sys.exit(f"{path.name}: review_id trùng, còn {int((~lab['label'].isin(CLASSES)).sum())} nhãn trống hoặc ngoài positive/mixed/negative.")
-    df = lab.set_index("review_id")
-
-    methods = ["llm", "baseline"]
-    res = {m: pd.read_csv(out / f"{m}_results.csv", dtype={"review_id": "int64"}).set_index("review_id") for m in methods}
-    for m, r in res.items():
-        df[m] = r["sentiment"].where(r["status"] == "ok").reindex(df.index).fillna("none")
-        print(f"{m}: thiếu/lỗi {np.sum(df[m] == 'none')}/{len(df)} review (tính là sai)")
-    df["floor"] = df["label"].mode()[0]  # mức sàn A: luôn đoán lớp phổ biến nhất của nhãn tay
-
-    txt = pd.Series({rid: clean(comments.get(rid), cfg["llm"]["max_chars"]) for rid in df.index})
-    df["lang"] = np.where(res["llm"]["language"].reindex(df.index) == "en", "en", "other")
-    df["length"] = pd.cut(txt.str.len(), [-1, 150, 400, 1e9], labels=["short", "mid", "long"]).astype(str)
-    df["auto"] = res["llm"]["auto_generated"].reindex(df.index).fillna(False).astype(bool).map({True: "yes", False: "no"})
-
-    groups = [("all", np.ones(len(df), bool))] + [(f"{c}={v}", (df[c] == v).to_numpy())
-                                                 for c in ("lang", "length", "auto") for v in sorted(df[c].unique())]
-    rows = []
-    for g, mask in groups:
-        d = df[mask]
-        for m in methods + ["floor"]:
-            rows += [(m, g, k, v, n) for k, v, n in metrics(d["label"].to_numpy(), d[m].to_numpy(), g == "all")]
-
-    y, B = df["label"].to_numpy(), E["bootstrap"]  # khoảng tin cậy 95% bằng bootstrap
-    idx = np.random.default_rng(cfg["seed"]).integers(0, len(df), (B, len(df)))
-    cl = [c for c in CLASSES if (y == c).any()]
-    for m in methods + ["floor"]:
-        p = df[m].to_numpy()
-        for k, fn in (("accuracy", lambda a, b: np.mean(a == b)), ("macro_f1", lambda a, b: macro_f1(a, b, cl))):
-            lo, hi = np.percentile([fn(y[i], p[i]) for i in idx], [2.5, 97.5])
-            rows += [(m, "all", f"{k}_ci_lo", lo, len(df)), (m, "all", f"{k}_ci_hi", hi, len(df))]
-
-    # hai con số bất đồng (không kiểm định McNemar) + độ đồng thuận trên cả mẫu
-    ok = {m: df[m] == df["label"] for m in methods}
-    pair = {"both_right": ok["llm"] & ok["baseline"], "only_llm_right": ok["llm"] & ~ok["baseline"],
-            "only_baseline_right": ~ok["llm"] & ok["baseline"], "both_wrong": ~ok["llm"] & ~ok["baseline"]}
-    rows += [("llm_vs_baseline", "all", k, int(v.sum()), len(df)) for k, v in pair.items()]
-    both = pd.concat({m: res[m]["sentiment"].where(res[m]["status"] == "ok") for m in methods}, axis=1).dropna()
+        make_sheet(cfg, path)
+        sys.exit(f"Đã tạo {path}. Điền cột label ({'/'.join(CLASSES)}) rồi chạy lại.\nĐừng mở thẳng bằng Excel: nó làm hỏng review_id "
+                 "19 chữ số (dùng VS Code, hoặc Excel > Data > From Text/CSV và đặt cột review_id là Text).")
+    hand = pd.read_csv(path, dtype=str, usecols=["review_id", "label"], encoding="utf-8-sig")
+    hand["label"] = hand["label"].fillna("").str.strip().str.lower()
+    if hand["review_id"].duplicated().any() or not hand["label"].isin(CLASSES).all():
+        sys.exit(f"{path.name}: review_id trùng, hoặc còn {int((~hand['label'].isin(CLASSES)).sum())} nhãn trống/ngoài {CLASSES}.")
+    llm, base = (pd.read_csv(proc / f, dtype=str) for f in ("llm_results.csv", "baseline_results.csv"))
+    llm["llm"], base["baseline"] = (x["sentiment"].where(x["status"] == "ok") for x in (llm, base))  # lỗi/rỗng: không có nhãn
+    s = llm[["review_id", "llm", "language", "auto_generated"]].merge(base[["review_id", "baseline"]], on="review_id")
+    if not hand["review_id"].isin(s["review_id"]).all():
+        sys.exit("Có review_id nhãn tay không thuộc mẫu LLM (Excel hay làm hỏng ID 19 chữ số: mở lại tệp bằng VS Code).")
+    d = hand.merge(s, on="review_id")
+    if len(d) < E["n_labels"]:
+        print(f"Cảnh báo: mới có {len(d)}/{E['n_labels']} nhãn tay.")
+    y = d["label"].to_numpy()
+    d["floor"] = pd.Series(y).mode()[0]  # mức sàn: luôn đoán lớp phổ biến nhất của nhãn tay
+    preds = {m: d[m].fillna("none").to_numpy() for m in METHODS}  # không có nhãn = đoán sai
+    for m in ("llm", "baseline"):
+        print(f"{m}: lỗi/thiếu {int(d[m].isna().sum())}/{len(d)} review (tính là sai)")
+    txt = pd.Series(list(texts(cfg, d["review_id"].astype(int)).values()), index=d.index)
+    d["lang"] = np.where(d["language"].eq("en"), "en", "other")
+    d["length"] = pd.cut(txt.str.len(), [-1, 150, 400, 1e9], labels=["short", "mid", "long"]).astype(str)
+    d["auto"] = np.where(d["auto_generated"].eq("True"), "yes", "no")
+    groups = {"all": np.ones(len(d), bool), **{f"{c}={v}": (d[c] == v).to_numpy()
+                                               for c in ("lang", "length", "auto") for v in sorted(d[c].unique())}}
+    ci, rows, n = boot(y, preds, E["bootstrap"], cfg["seed"]), [], len(y)
+    for m, p in preds.items():
+        for g, k in groups.items():
+            rows += [(m, g, *r) for r in metrics(y[k], p[k], g == "all")]
+        rows += [(m, "all", name, v, n) for name, v in zip(CI_NAMES, ci[m])]
+    pt = lambda m: (np.mean(y == preds[m]), macro_f1(y, preds[m]))
+    rows += [("llm_minus_baseline", "all", k, v, n) for k, v in zip(("accuracy", "macro_f1"), np.subtract(pt("llm"), pt("baseline")))]
+    rows += [("llm_minus_baseline", "all", name, v, n) for name, v in zip(CI_NAMES, ci["diff"])]
+    r1, r2 = preds["llm"] == y, preds["baseline"] == y  # bảng bất đồng: ai đúng, ai sai
+    rows += [("llm_vs_baseline", "all", k, int(v.sum()), n) for k, v in
+             {"both_right": r1 & r2, "only_llm_right": r1 & ~r2, "only_baseline_right": ~r1 & r2, "both_wrong": ~r1 & ~r2}.items()]
+    both = s.dropna(subset=["llm", "baseline"])  # độ đồng thuận tính trên cả mẫu LLM, không cần nhãn tay
     a, b = both["llm"].to_numpy(), both["baseline"].to_numpy()
-    rows += [("llm_vs_baseline", "agreement_all_sample", "agreement", np.mean(a == b), len(both)),
-             ("llm_vs_baseline", "agreement_all_sample", "cohen_kappa", kappa(a, b), len(both))]
-    pd.DataFrame(rows, columns=["method", "group", "metric", "value", "n"]).to_csv(out / "eval_metrics.csv", index=False)
-
-    conf = [df.groupby(["label", m]).size().rename("count").reset_index().rename(columns={m: "pred"}).assign(method=m)
-            for m in methods + ["floor"]]
-    pd.concat(conf)[["method", "label", "pred", "count"]].to_csv(out / "eval_confusion.csv", index=False)
-
-    wrong = pd.concat({m: df[m] != df["label"] for m in methods}, axis=1)
-    err = df[wrong.any(axis=1)].assign(wrong_in=wrong.apply(lambda r: "+".join(m for m in methods if r[m]), axis=1),
-                                       excerpt=txt.str[:200])
-    err[["label", *methods, "wrong_in", "lang", "length", "auto", "excerpt"]].reset_index().to_csv(
-        out / "eval_errors.csv", index=False)
-    print(f"Done: {len(rows)} số đo, {len(err)} review sai -> eval_metrics.csv, eval_confusion.csv, eval_errors.csv")
-    return 0
+    rows += [("llm_vs_baseline", "full_sample", "agreement", np.mean(a == b), len(a)),
+             ("llm_vs_baseline", "full_sample", "cohen_kappa", kappa(a, b), len(a))]
+    rows += [(f"{m}_vs_hand", "all", "cohen_kappa", kappa(y, preds[m]), n) for m in ("llm", "baseline")]
+    pd.DataFrame(rows, columns=["method", "group", "metric", "value", "n"]).round(4).to_csv(proc / "eval_metrics.csv", index=False)
+    conf = [pd.DataFrame({"method": m, "label": y, "pred": p}).value_counts().reset_index(name="count") for m, p in preds.items()]
+    pd.concat(conf).to_csv(proc / "eval_confusion.csv", index=False)
+    wrong = pd.DataFrame({m: preds[m] != y for m in ("llm", "baseline")}, index=d.index)
+    err = d.assign(llm=preds["llm"], baseline=preds["baseline"], excerpt=txt.str[:200],
+                   wrong_in=wrong.apply(lambda r: "+".join(m for m in wrong if r[m]), axis=1))[wrong.any(axis=1)]
+    err[["review_id", "label", "llm", "baseline", "wrong_in", "lang", "length", "auto", "excerpt"]].to_csv(proc / "eval_errors.csv", index=False)
+    print(f"{len(rows)} số đo, {len(err)} review sai -> eval_metrics.csv, eval_confusion.csv, eval_errors.csv")
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml"))
+    main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml")
