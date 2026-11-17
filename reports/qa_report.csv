@@ -184,6 +184,6 @@
 2026-06-29,comment_empty,reviews,comments,comments rỗng sau khi cắt khoảng trắng,không có nội dung để phân tích,đổi thành NA,0,rows,,,
 2026-06-29,encoding,reviews,comments,"chứa dấu hiệu lỗi mã hoá (Ã, Â, â€, �)",văn bản có thể đã bị hỏng,gắn cờ,0,rows,,,
 2026-06-29,expected,reviews,row_count,số liệu khác kỳ vọng trong qa.expected,lọc sai ID hoặc dữ liệu đổi,"ghi ok/error, không dừng",5000,expected_vs_actual,5000.0,5000.0,ok
-all,outlier,listings,price,"log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type (bỏ qua khi IQR = 0)",giá trị cực đoan có thể là lỗi nhập,"gắn cờ, giữ giá trị",83,median,1670.0,1626.33,
-all,outlier,listings,estimated_revenue_l365d,"log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type (bỏ qua khi IQR = 0)",giá trị cực đoan có thể là lỗi nhập,"gắn cờ, giữ giá trị",307,median,66351.0,81900.0,
+all,outlier,listings,price,"log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type, chỉ tính giá trị khác 0 (bỏ qua khi IQR = 0)",giá trị cực đoan có thể là lỗi nhập,"gắn cờ, giữ giá trị",83,median,1670.0,1626.33,
+all,outlier,listings,estimated_revenue_l365d,"log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type, chỉ tính giá trị khác 0 (bỏ qua khi IQR = 0)",giá trị cực đoan có thể là lỗi nhập,"gắn cờ, giữ giá trị",1,median,66351.0,66402.0,
 all,dup_snapshot,reviews,id,cùng review id ở nhiều mốc,đánh giá tích luỹ nên lặp giữa các mốc là bình thường,giữ mốc mới nhất,15000,rows,,,

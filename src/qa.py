@@ -9,7 +9,7 @@ import yaml
 
 from download import ROOT, build_path
 
-ENC = r"[ÃÂ][^A-Za-z\s]|â€|\ufffd"  # dấu hiệu lỗi mã hoá (mojibake)
+ENC = "[ÃÂ][^A-Za-z\\s]|â€|\ufffd"  # dấu hiệu lỗi mã hoá (mojibake)
 SENTINELS = {"n/a", "na", "nan", "null", "none", "-", "--", "unknown"}  # chuỗi đánh dấu "thiếu"
 LIST_COLS = ["id", "neighbourhood_cleansed", "room_type", "price", "estimated_occupancy_l365d",
              "estimated_revenue_l365d", "number_of_reviews", "latitude", "longitude"]
@@ -30,7 +30,7 @@ RULES = {
     "price_parse": ("price không ép được sang số", "định dạng lạ", "NA"),
     "price_zero": ("price == 0 (đếm trước khi xoá)", "giá 0 không phải giá thật", "chỉ đếm; price_min sẽ xoá"),
     "price_min": ("price < 0.01", "giá không hợp lệ", "đổi thành NA"),
-    "outlier": ("log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type (bỏ qua khi IQR = 0)", "giá trị cực đoan có thể là lỗi nhập", "gắn cờ, giữ giá trị"),
+    "outlier": ("log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type, chỉ tính giá trị khác 0 (bỏ qua khi IQR = 0)", "giá trị cực đoan có thể là lỗi nhập", "gắn cờ, giữ giá trị"),
     "occ_range": ("ngoài [0, 365]", "số đêm trong 365 ngày", "đổi thành NA, giữ số 0"),
     "rev_negative": ("< 0", "doanh thu không âm", "đổi thành NA, giữ số 0"),
     "zero_kept": ("giá trị đúng bằng 0", "0 có thể là giá trị thật", "giữ nguyên, chỉ đếm"),
@@ -225,7 +225,7 @@ def main(config_path):
     rep.snap = "all"  # bước cần nhìn mọi mốc cùng lúc
     listings, reviews = pd.concat(lis, ignore_index=True), pd.concat(rev, ignore_index=True).sort_values("snapshot")
     for col, name in (("price", "flag_price_outlier"), ("estimated_revenue_l365d", "flag_revenue_outlier")):
-        rep.flag(listings, name, iqr_flag(listings[col], listings["room_type"], qa["iqr_k"]), "outlier", "listings", col, x=listings[col])
+        rep.flag(listings, name, iqr_flag(listings[col].where(listings[col] != 0), listings["room_type"], qa["iqr_k"]), "outlier", "listings", col, x=listings[col])
     n, reviews = len(reviews), reviews.drop_duplicates("id", keep="last")
     rep.log("dup_snapshot", "reviews", "id", n - len(reviews))
     out = ROOT / "data" / "processed"
