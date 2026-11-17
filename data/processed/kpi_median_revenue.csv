@@ -1,0 +1,87 @@
+kpi,snapshot,level,group,room_type,value,n,currency
+median_revenue,2025-09-28,analysis_area,A01,,84276.0,123,ZAR
+median_revenue,2025-09-28,analysis_area,A02,,132918.0,124,ZAR
+median_revenue,2025-09-28,analysis_area,A03,,44742.0,114,ZAR
+median_revenue,2025-09-28,analysis_area,A04,,34320.0,114,ZAR
+median_revenue,2025-09-28,analysis_area,A05,,78492.0,124,ZAR
+median_revenue,2025-09-28,analysis_area,A06,,87750.0,121,ZAR
+median_revenue,2025-09-28,analysis_area,A07,,47520.0,123,ZAR
+median_revenue,2025-09-28,analysis_area,A08,,21000.0,117,ZAR
+median_revenue,2026-03-30,analysis_area,A01,,93603.5,126,ZAR
+median_revenue,2026-03-30,analysis_area,A02,,185784.0,127,ZAR
+median_revenue,2026-03-30,analysis_area,A03,,59348.0,119,ZAR
+median_revenue,2026-03-30,analysis_area,A04,,40515.0,116,ZAR
+median_revenue,2026-03-30,analysis_area,A05,,105285.0,127,ZAR
+median_revenue,2026-03-30,analysis_area,A06,,169090.5,120,ZAR
+median_revenue,2026-03-30,analysis_area,A07,,71622.0,125,ZAR
+median_revenue,2026-03-30,analysis_area,A08,,25069.0,120,ZAR
+median_revenue,2026-06-29,analysis_area,A01,,83400.0,128,ZAR
+median_revenue,2026-06-29,analysis_area,A02,,139507.5,124,ZAR
+median_revenue,2026-06-29,analysis_area,A03,,61378.5,118,ZAR
+median_revenue,2026-06-29,analysis_area,A04,,38170.0,119,ZAR
+median_revenue,2026-06-29,analysis_area,A05,,84510.0,127,ZAR
+median_revenue,2026-06-29,analysis_area,A06,,123559.0,121,ZAR
+median_revenue,2026-06-29,analysis_area,A07,,71714.0,122,ZAR
+median_revenue,2026-06-29,analysis_area,A08,,24672.0,121,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 1,,5100.0,11,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 107,,47856.0,29,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 113,,15576.0,15,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 115,,83564.0,224,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 23,,26394.0,50,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 4,,25572.0,10,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 54,,121590.0,155,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 55,,21552.0,31,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 57,,14529.0,12,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 58,,61939.0,16,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 59,,52692.0,19,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 61,,51960.0,46,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 62,,120080.0,24,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 64,,58644.0,55,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 69,,49515.0,22,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 71,,10278.0,12,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 74,,114920.0,38,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 77,,105200.0,57,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 83,,32784.0,16,ZAR
+median_revenue,2025-09-28,neighbourhood_cleansed,Ward 84,,32880.0,14,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 1,,0.0,11,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 107,,65680.0,30,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 113,,29497.0,16,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 115,,153083.5,226,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 15,,20545.5,14,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 23,,49025.5,50,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 4,,36357.0,12,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 54,,179454.0,157,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 55,,44040.0,31,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 57,,31291.5,12,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 58,,89589.0,16,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 59,,121545.0,19,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 61,,69840.0,47,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 62,,85590.0,27,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 64,,65506.0,53,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 69,,40420.5,22,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 71,,46230.0,13,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 74,,108642.0,41,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 77,,127857.5,58,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 83,,41169.0,16,ZAR
+median_revenue,2026-03-30,neighbourhood_cleansed,Ward 84,,55963.0,14,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 1,,0.0,11,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 107,,52248.0,29,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 113,,26811.0,16,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 115,,118350.0,223,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 15,,26881.0,14,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 23,,38256.0,51,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 4,,29258.0,13,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 54,,140040.0,157,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 55,,37665.0,31,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 57,,44643.0,12,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 58,,98294.5,16,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 59,,113496.0,19,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 61,,74035.5,46,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 62,,61632.0,27,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 64,,65699.0,54,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 69,,30132.0,23,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 71,,45352.0,13,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 74,,89930.0,41,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 77,,105903.0,56,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 83,,36303.0,16,ZAR
+median_revenue,2026-06-29,neighbourhood_cleansed,Ward 84,,44490.0,14,ZAR
