@@ -1,19 +1,15 @@
 """Gán nhãn các review «Mẫu LLM» bằng Gemini: gọi theo lô, có cache, chạy dở chạy tiếp được.
-Chạy: python src/llm.py configs/cape_town.yaml
+Chạy: python src/llm.py configs/cape_town.yaml [--skip-llm]  (--skip-llm: không gọi API, chỉ dùng cache)
 Ra:   data/processed/llm_cache.jsonl, llm_results.csv (bảng phẳng cho KPI/viz), llm_usage.json (token, tỉ lệ lỗi, chi phí)
-Khoá API: biến môi trường llm.api_key_env (mặc định GEMINI_API_KEY)."""
-import hashlib, html, json, os, re, sys, time
+Khoá API: biến môi trường llm.api_key_env (mặc định GEMINI_API_KEY). Thiếu khoá hoặc --skip-llm: chỉ dùng cache, không gọi API."""
+import hashlib, json, os, re, sys, time
 from typing import Literal
 
-import httpx
 import pandas as pd
-import yaml
-from google import genai
-from google.genai import errors, types
 from pydantic import BaseModel
 
-from download import ROOT, build_path
-from qa import load_refs
+from common import PROC, review_texts, run
+from download import build_path
 
 HINTS = {"location": "area, access, views", "cleanliness": "tidy, smell, bugs", "host": "communication, check-in",
          "value": "price vs quality", "amenities": "equipment, wifi, parking, bed", "noise": "noise, quiet, thin walls",
@@ -48,16 +44,11 @@ def make_schema(aspects):
     return Item
 
 
-def clean(text, max_chars):
-    """Bỏ HTML, gộp khoảng trắng, cắt độ dài: mọi phương pháp (LLM, đối chứng) dùng chung."""
-    if not isinstance(text, str):
-        return ""
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", text))).strip()[:max_chars]
-
-
 def label(client, llm, config, Item, texts):
     """Gửi một lô -> ({chỉ số: Item}, lỗi: None | 'api' | 'content', [token vào, token ra]).
     429/5xx: chờ tăng dần rồi thử lại; lỗi khác (khoá sai, 400...): dừng ngay; mục thiếu/sai được gửi lại."""
+    import httpx
+    from google.genai import errors  # nạp muộn: --skip-llm không cần SDK
     got, err, tok = {}, None, [0, 0]
     for attempt in range(llm["retries"]):
         pending = [i for i in range(len(texts)) if i not in got]
@@ -94,29 +85,33 @@ def label(client, llm, config, Item, texts):
     return got, (None if len(got) == len(texts) else err or "content"), tok
 
 
-def main(config_path):
-    with open(config_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
-    llm, root, proc = cfg["llm"], cfg["data_root"].strip("/ "), ROOT / "data" / "processed"
+def main(cfg, skip_llm=False):
+    llm, root = cfg["llm"], cfg["data_root"].strip("/ ")
     system = PROMPT.replace("ASPECTS", ", ".join(f"{a} ({HINTS[a]})" if a in HINTS else a for a in llm["aspects"]))
     key = {"model": llm["model"],  # sửa prompt hoặc đổi model thì cache cũ không bị dùng nhầm
            "prompt_version": f"{llm['prompt_version']}:{hashlib.sha1(system.encode()).hexdigest()[:6]}"}
-    ref = load_refs(cfg)["review"]
-    sample = [int(x) for x in ref.loc[ref["Mẫu LLM"].str.lower().eq("x"), "review_id"]]
-    rv = pd.read_csv(proc / "reviews_clean.csv", usecols=["id", "comments"]).set_index("id")["comments"]
-    text = {i: clean(rv[i], llm["max_chars"]) for i in sample if i in rv.index}
-    path, rec, failed = proc / "llm_cache.jsonl", {}, False  # rec: review_id -> bản ghi mới nhất khớp key
+    text = review_texts(cfg)
+    path, failed, latest, rec = PROC / "llm_cache.jsonl", False, {}, {}  # latest: mới nhất bất kể key; rec: mới nhất khớp key
     for line in (open(path, encoding="utf-8") if path.exists() else []):
         try:
             r = json.loads(line)
         except ValueError:  # dòng cuối bị cắt do dừng giữa chừng
             continue
+        latest[r["review_id"]] = r
         if all(r.get(k) == v for k, v in key.items()):
             rec[r["review_id"]] = r
-    todo = [i for i, t in text.items() if t and rec.get(i, {}).get("status") != "ok"]  # chưa làm hoặc lỗi lần trước
+    online = not skip_llm and bool(os.environ.get(llm["api_key_env"]))
+    if not online:  # không gọi API: dùng cache, ưu tiên bản khớp key, không có thì bản mới nhất (config LLM có thể đã đổi)
+        rec = {**latest, **rec}
+        if not skip_llm:
+            print(f"Thiếu khoá API {llm['api_key_env']}: chỉ dùng kết quả đã cache.")
+        stale = sum(any(r.get(k) != v for k, v in key.items()) for i, r in rec.items() if i in text)
+        if stale:
+            print(f"Cảnh báo: {stale} bản ghi cache được tạo bởi model/prompt khác với config hiện tại.")
+    todo = [i for i, t in text.items() if t and rec.get(i, {}).get("status") != "ok"] if online else []  # chưa làm hoặc lỗi lần trước
     if todo:
-        if not os.environ.get(llm["api_key_env"]):
-            sys.exit(f"Thiếu khoá API: đặt biến môi trường {llm['api_key_env']}.")
+        from google import genai
+        from google.genai import types
         client, Item, bs = genai.Client(api_key=os.environ[llm["api_key_env"]]), make_schema(llm["aspects"]), llm["batch_size"]
         config = types.GenerateContentConfig(system_instruction=system, temperature=0,
                                              response_mime_type="application/json", response_schema=list[Item])
@@ -128,7 +123,7 @@ def main(config_path):
                     it = got.get(j)
                     if not it and err == "api":  # API chết: để lần sau chạy tiếp, không ghi là lỗi nội dung
                         continue
-                    fields = {"status": "ok", "sentiment": it.sentiment, "language": it.language.lower()[:3],
+                    fields = {"status": "ok", "sentiment": it.sentiment, "language": it.language.lower(),
                               "aspects": {a.name: a.polarity for a in it.aspects}} if it else {"status": "error"}
                     rec[rid] = {"review_id": rid, **key, **fields, "tin": tok[0] / len(batch), "tout": tok[1] / len(batch)}
                     f.write(json.dumps(rec[rid], ensure_ascii=False) + "\n")
@@ -141,21 +136,25 @@ def main(config_path):
     rows = [{"review_id": i, "status": r["status"], "sentiment": r.get("sentiment"), "language": r.get("language"),
              "auto_generated": bool(AUTO.match(t)), **{f"aspect_{a}": r.get("aspects", {}).get(a) for a in llm["aspects"]}}
             for i, t in text.items() if (r := rec.get(i) if t else {"status": "empty"})]  # comments rỗng: không gửi API
-    pd.DataFrame(rows).to_csv(proc / "llm_results.csv", index=False)
+    if not rows:
+        sys.exit("Chưa có kết quả LLM nào: cần llm_cache.jsonl hoặc khoá API.")
+    pd.DataFrame(rows).to_csv(PROC / "llm_results.csv", index=False)
     sent = [r for i, r in rec.items() if i in text]  # chi phí cả thành phố = token trung bình mỗi review x số review
     n_err, n = sum(r["status"] == "error" for r in sent), max(len(sent), 1)
     ai, ao = sum(r["tin"] for r in sent) / n, sum(r["tout"] for r in sent) / n
-    city = sum(len(c) for c in pd.read_csv(build_path(root, str(cfg["snapshots"][-1]), "reviews.csv.gz"),
-                                           dtype=str, usecols=["id"], chunksize=500_000))
+    snap, usage_file = str(cfg["snapshots"][-1]), PROC / "llm_usage.json"
+    old = json.loads(usage_file.read_text(encoding="utf-8")) if usage_file.exists() else {}
+    city = old["city_reviews"] if old.get("city_snapshot") == snap else sum(  # đếm lại chỉ khi đổi mốc cuối
+        len(c) for c in pd.read_csv(build_path(root, snap, "reviews.csv.gz"), dtype=str, usecols=["id"], chunksize=500_000))
     cin, cout = city * ai * llm["price_in"] / 1e6, city * ao * llm["price_out"] / 1e6
     usage = {**key, "reviews_ok": len(sent) - n_err, "reviews_error": n_err, "error_rate": round(n_err / n, 4),
-             "avg_tokens_in": round(ai), "avg_tokens_out": round(ao), "city_reviews": city, "est_cost_usd_input": round(cin, 2),
+             "avg_tokens_in": round(ai), "avg_tokens_out": round(ao), "city_snapshot": snap, "city_reviews": city, "est_cost_usd_input": round(cin, 2),
              "est_cost_usd_output": round(cout, 2), "est_cost_usd_city": round(cin + cout, 2),
              "price_assumption": f"{llm['model']}: {llm['price_in']}/{llm['price_out']} USD mỗi 1M token (vào/ra), tra ngày {llm['price_date']}"}
-    (proc / "llm_usage.json").write_text(json.dumps(usage, ensure_ascii=False, indent=2), encoding="utf-8")
+    usage_file.write_text(json.dumps(usage, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"ok={usage['reviews_ok']}, error={n_err}; ước tính cả thành phố ({city} review): ${usage['est_cost_usd_city']}")
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml"))
+    run(main)

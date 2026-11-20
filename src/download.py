@@ -3,12 +3,11 @@ import csv
 import gzip
 import sys
 import time
-from pathlib import Path
 
 import requests
-import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+from common import ROOT, run
+
 BASE_URL = "https://data.insideairbnb.com"
 KEY_COLS = {  # tệp -> cột khoá bắt buộc
     "listings.csv.gz": {"id"},
@@ -66,13 +65,11 @@ def fetch(url, path):
         except Exception as e:
             print(f"[fail] {url} (lần {attempt + 1}/{RETRIES + 1}): {e}")
             path.unlink(missing_ok=True)
-            time.sleep(2 ** attempt if attempt < RETRIES else 0)
+            time.sleep(2 ** attempt)
     return False
 
 
-def main(config_path):
-    with open(config_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+def main(cfg):
     root = cfg["data_root"].strip("/ ")
     failed = [build_url(root, snap, file)
               for snap in map(str, cfg["snapshots"]) for file in KEY_COLS
@@ -82,4 +79,4 @@ def main(config_path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml")
+    run(main)

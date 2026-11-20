@@ -6,6 +6,7 @@
   "error_rate": 0.0,
   "avg_tokens_in": 93,
   "avg_tokens_out": 74,
+  "city_snapshot": "2026-06-29",
   "city_reviews": 760023,
   "est_cost_usd_input": 17.73,
   "est_cost_usd_output": 83.92,

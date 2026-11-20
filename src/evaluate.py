@@ -6,11 +6,8 @@ import sys
 
 import numpy as np
 import pandas as pd
-import yaml
 
-from download import ROOT
-from llm import clean
-from qa import load_refs
+from common import PROC, ROOT, review_texts, run, sample_ids
 
 CLASSES, METHODS = ["positive", "mixed", "negative"], ["llm", "baseline", "floor"]
 CI_NAMES = ["accuracy_ci_lo", "accuracy_ci_hi", "macro_f1_ci_lo", "macro_f1_ci_hi"]
@@ -19,7 +16,7 @@ CI_NAMES = ["accuracy_ci_lo", "accuracy_ci_hi", "macro_f1_ci_lo", "macro_f1_ci_h
 def f1(y, p, c):
     """F1 của lớp c = 2TP / (số dự đoán c + số thật c)."""
     d = np.sum(p == c) + np.sum(y == c)
-    return 2 * np.sum((y == c) & (p == c)) / d if d else 0.0
+    return 2 * np.sum((y == c) & (p == c)) / d
 
 
 def macro_f1(y, p):
@@ -39,7 +36,7 @@ def metrics(y, p, full=False):
 def kappa(a, b):
     """Cohen's kappa: mức đồng thuận của a và b vượt trên mức ngẫu nhiên."""
     pe = sum(np.mean(a == c) * np.mean(b == c) for c in np.union1d(a, b))
-    return float((np.mean(a == b) - pe) / (1 - pe)) if pe < 1 else 1.0
+    return float((np.mean(a == b) - pe) / (1 - pe))
 
 
 def boot(y, preds, B, seed):
@@ -50,27 +47,19 @@ def boot(y, preds, B, seed):
     return {m: np.percentile(v, [2.5, 97.5], axis=0).T.ravel() for m, v in st.items()}  # theo thứ tự CI_NAMES
 
 
-def texts(cfg, ids):
-    """Văn bản đã clean() của các review (cùng bước làm sạch với llm.py và baseline.py)."""
-    rv = pd.read_csv(ROOT / "data" / "processed" / "reviews_clean.csv", usecols=["id", "comments"]).set_index("id")["comments"]
-    return {i: clean(rv.get(i), cfg["llm"]["max_chars"]) for i in ids}
-
-
 def make_sheet(cfg, path):
-    """Tạo bảng nhãn tay: ưu tiên các review đánh dấu «Nhãn tay» trong Excel; không có thì lấy ngẫu nhiên (seed cố định) từ «Mẫu LLM»."""
-    ref = load_refs(cfg)["review"]
-    sample, marked = (ref.loc[ref[c].str.lower().eq("x"), "review_id"].astype(int).tolist() for c in ("Mẫu LLM", "Nhãn tay"))
-    text = texts(cfg, sorted(marked or sample))
+    """Tạo bảng nhãn tay: lấy ngẫu nhiên (seed cố định) n_labels review đánh dấu «Nhãn tay» trong Excel."""
+    text, n = review_texts(cfg, sorted(sample_ids(cfg, "Nhãn tay"))), cfg["eval"]["n_labels"]
     ok = [i for i, t in text.items() if t]
-    ids = random.Random(cfg["seed"]).sample(ok, min(cfg["eval"]["n_labels"], len(ok)))
+    if len(ok) < n:
+        sys.exit(f"Chỉ có {len(ok)} review «Nhãn tay» có văn bản, cần {n}.")
+    ids = random.Random(cfg["seed"]).sample(ok, n)
     path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame({"review_id": ids, "label": "", "text": [text[i] for i in ids]}).to_csv(path, index=False, encoding="utf-8-sig")
 
 
-def main(config_path):
-    with open(config_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
-    E, proc = cfg["eval"], ROOT / "data" / "processed"
+def main(cfg):
+    E = cfg["eval"]
     path = ROOT / E["labels"]
     if not path.exists():
         make_sheet(cfg, path)
@@ -80,7 +69,7 @@ def main(config_path):
     hand["label"] = hand["label"].fillna("").str.strip().str.lower()
     if hand["review_id"].duplicated().any() or not hand["label"].isin(CLASSES).all():
         sys.exit(f"{path.name}: review_id trùng, hoặc còn {int((~hand['label'].isin(CLASSES)).sum())} nhãn trống/ngoài {CLASSES}.")
-    llm, base = (pd.read_csv(proc / f, dtype=str) for f in ("llm_results.csv", "baseline_results.csv"))
+    llm, base = (pd.read_csv(PROC / f, dtype=str) for f in ("llm_results.csv", "baseline_results.csv"))
     llm["llm"], base["baseline"] = (x["sentiment"].where(x["status"] == "ok") for x in (llm, base))  # lỗi/rỗng: không có nhãn
     s = llm[["review_id", "llm", "language", "auto_generated"]].merge(base[["review_id", "baseline"]], on="review_id")
     if not hand["review_id"].isin(s["review_id"]).all():
@@ -93,7 +82,7 @@ def main(config_path):
     preds = {m: d[m].fillna("none").to_numpy() for m in METHODS}  # không có nhãn = đoán sai
     for m in ("llm", "baseline"):
         print(f"{m}: lỗi/thiếu {int(d[m].isna().sum())}/{len(d)} review (tính là sai)")
-    txt = pd.Series(list(texts(cfg, d["review_id"].astype(int)).values()), index=d.index)
+    txt = pd.Series(list(review_texts(cfg, d["review_id"].astype(int)).values()), index=d.index)
     d["lang"] = np.where(d["language"].eq("en"), "en", "other")
     d["length"] = pd.cut(txt.str.len(), [-1, 150, 400, 1e9], labels=["short", "mid", "long"]).astype(str)
     d["auto"] = np.where(d["auto_generated"].eq("True"), "yes", "no")
@@ -115,15 +104,15 @@ def main(config_path):
     rows += [("llm_vs_baseline", "full_sample", "agreement", np.mean(a == b), len(a)),
              ("llm_vs_baseline", "full_sample", "cohen_kappa", kappa(a, b), len(a))]
     rows += [(f"{m}_vs_hand", "all", "cohen_kappa", kappa(y, preds[m]), n) for m in ("llm", "baseline")]
-    pd.DataFrame(rows, columns=["method", "group", "metric", "value", "n"]).round(4).to_csv(proc / "eval_metrics.csv", index=False)
+    pd.DataFrame(rows, columns=["method", "group", "metric", "value", "n"]).round(4).to_csv(PROC / "eval_metrics.csv", index=False)
     conf = [pd.DataFrame({"method": m, "label": y, "pred": p}).value_counts().reset_index(name="count") for m, p in preds.items()]
-    pd.concat(conf).to_csv(proc / "eval_confusion.csv", index=False)
+    pd.concat(conf).to_csv(PROC / "eval_confusion.csv", index=False)
     wrong = pd.DataFrame({m: preds[m] != y for m in ("llm", "baseline")}, index=d.index)
     err = d.assign(llm=preds["llm"], baseline=preds["baseline"], excerpt=txt.str[:200],
                    wrong_in=wrong.apply(lambda r: "+".join(m for m in wrong if r[m]), axis=1))[wrong.any(axis=1)]
-    err[["review_id", "label", "llm", "baseline", "wrong_in", "lang", "length", "auto", "excerpt"]].to_csv(proc / "eval_errors.csv", index=False)
+    err[["review_id", "label", "llm", "baseline", "wrong_in", "lang", "length", "auto", "excerpt"]].to_csv(PROC / "eval_errors.csv", index=False)
     print(f"{len(rows)} số đo, {len(err)} review sai -> eval_metrics.csv, eval_confusion.csv, eval_errors.csv")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml")
+    run(main)

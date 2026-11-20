@@ -1,10 +1,10 @@
-requests==2.34.2
-PyYAML==6.0.3
-pandas==3.1.0
+google-genai==3.0.0
+httpx==0.28.1
+matplotlib==3.11.2
 numpy==2.5.4
 openpyxl==3.1.5
-matplotlib==3.11.2
-vaderSentiment==3.3.2
-httpx==0.28.1
-google-genai==3.0.0
+pandas==3.1.0
 pydantic==2.14.3
+PyYAML==6.0.3
+requests==2.34.2
+vaderSentiment==3.3.2

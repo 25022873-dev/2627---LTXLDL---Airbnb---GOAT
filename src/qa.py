@@ -1,13 +1,12 @@
 """QA và làm sạch listings + reviews: python src/qa.py configs/cape_town.yaml
 Ra: data/processed/{listings,reviews}_clean.csv, rejected_*.csv, reports/qa_report.csv.
 Excel chỉ đọc lần đầu; ID và vùng của nhóm được cache ở data/processed/refs/ (không cần commit Excel)."""
-import sys
 
 import numpy as np
 import pandas as pd
-import yaml
 
-from download import ROOT, build_path
+from common import PROC, ROOT, load_refs, run
+from download import build_path
 
 ENC = "[ÃÂ][^A-Za-z\\s]|â€|\ufffd"  # dấu hiệu lỗi mã hoá (mojibake)
 SENTINELS = {"n/a", "na", "nan", "null", "none", "-", "--", "unknown"}  # chuỗi đánh dấu "thiếu"
@@ -28,7 +27,6 @@ RULES = {
     "price_empty": ("price rỗng", "không có giá", "NA"),
     "price_sentinel": ("price là chuỗi sentinel (n/a, null, ...)", "thiếu nhưng ghi bằng chữ", "NA"),
     "price_parse": ("price không ép được sang số", "định dạng lạ", "NA"),
-    "price_zero": ("price == 0 (đếm trước khi xoá)", "giá 0 không phải giá thật", "chỉ đếm; price_min sẽ xoá"),
     "price_min": ("price < 0.01", "giá không hợp lệ", "đổi thành NA"),
     "outlier": ("log1p ngoài [Q1-k*IQR, Q3+k*IQR] theo room_type, chỉ tính giá trị khác 0 (bỏ qua khi IQR = 0)", "giá trị cực đoan có thể là lỗi nhập", "gắn cờ, giữ giá trị"),
     "occ_range": ("ngoài [0, 365]", "số đêm trong 365 ngày", "đổi thành NA, giữ số 0"),
@@ -37,7 +35,6 @@ RULES = {
     "reviews_neg": ("không phải số nguyên >= 0", "số đánh giá là số đếm", "đổi thành NA"),
     "coord_range": ("|latitude| > 90 hoặc |longitude| > 180", "toạ độ không tồn tại", "đổi thành NA"),
     "coord_box": ("toạ độ nằm ngoài hộp của analysis_area", "sai vị trí hoặc sai khu vực", "gắn cờ"),
-    "orphan": ("listing_id không thuộc danh sách listing của nhóm", "đánh giá mồ côi", "gắn cờ"),
     "id_mismatch": ("listing_id khác sheet Review", "dữ liệu thô lệch bảng được giao", "gắn cờ"),
     "comment_empty": ("comments rỗng sau khi cắt khoảng trắng", "không có nội dung để phân tích", "đổi thành NA"),
     "expected": ("số liệu khác kỳ vọng trong qa.expected", "lọc sai ID hoặc dữ liệu đổi", "ghi ok/error, không dừng"),
@@ -105,21 +102,6 @@ class Report:
                      actual, "ok" if ok else "error")
 
 
-def load_refs(cfg):
-    """ID/vùng của nhóm từ Excel, cache CSV nhỏ (có thể commit); có cache thì không cần Excel."""
-    base, g = ROOT / "data" / "processed" / "refs", cfg["group_code"]
-    base.mkdir(parents=True, exist_ok=True)
-    refs = {}
-    for sheet, key in (("Listing", "listing"), ("Review", "review"), ("Vùng", "area")):
-        cache = base / f"{key}_{g}.csv"
-        if not cache.exists():
-            df = pd.read_excel(ROOT / cfg["ids_file"], sheet_name=sheet, dtype=str)
-            mine = df["Thành phố"].str.lower().str.replace(" ", "_") == cfg["city"] if key == "area" else df["Mã dữ liệu"] == g
-            df[mine].to_csv(cache, index=False)
-        refs[key] = pd.read_csv(cache, dtype=str)
-    return refs
-
-
 def read(path, ids, table, rep, **kw):
     """Đọc theo khối, chỉ giữ dòng thuộc ID của nhóm (so chuỗi thô); đếm khoá rỗng và dòng ngoài nhóm."""
     kept, total, nulls = [], 0, 0
@@ -151,7 +133,7 @@ def prep(df, ids, table, rep):
 
 def clean_listings(df, ids, areas, boxes, rep):
     t = "listings"
-    df = prep(df, ids, t, rep)[LIST_COLS].assign(snapshot=rep.snap)
+    df = prep(df, ids, t, rep).reindex(columns=LIST_COLS, fill_value="").assign(snapshot=rep.snap)  # cột vắng mặt -> rỗng, bị đếm ở price_empty
     for c in ("neighbourhood_cleansed", "room_type"):  # (2) text, rỗng/sentinel -> NA
         s = df[c].str.strip()
         miss = (s == "") | s.str.lower().isin(SENTINELS)
@@ -166,7 +148,6 @@ def clean_listings(df, ids, areas, boxes, rep):
     rep.log("price_empty", t, "price", empty.sum())
     rep.log("price_sentinel", t, "price", sent.sum())
     rep.log("price_parse", t, "price", (p.isna() & ~empty & ~sent).sum())
-    rep.log("price_zero", t, "price", (p == 0).sum())
     df["price"] = rep.blank(p, p < 0.01, "price_min", t, "price")
     occ = to_float(df["estimated_occupancy_l365d"])  # (5)
     df["estimated_occupancy_l365d"] = rep.blank(occ, (occ < 0) | (occ > 365), "occ_range", t, "estimated_occupancy_l365d", True)
@@ -191,11 +172,10 @@ def clean_listings(df, ids, areas, boxes, rep):
     return df
 
 
-def clean_reviews(df, ids, lids, sheet_lid, rep):
+def clean_reviews(df, ids, sheet_lid, rep):
     t = "reviews"
     df = prep(df, ids, t, rep)[["id", "listing_id", "date", "comments"]].assign(snapshot=rep.snap)
     df["listing_id"] = to_int(df["listing_id"])  # (9)
-    rep.flag(df, "flag_orphan", ~df["listing_id"].isin(lids), "orphan", t, "listing_id")
     differs = (df["listing_id"] != df["id"].map(sheet_lid)) | df["listing_id"].isna()
     rep.flag(df, "flag_listing_mismatch", differs, "id_mismatch", t, "listing_id")
     c = df["comments"].str.strip()  # (10)
@@ -206,9 +186,7 @@ def clean_reviews(df, ids, lids, sheet_lid, rep):
     return df
 
 
-def main(config_path):
-    with open(config_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+def main(cfg):
     root, qa, refs = cfg["data_root"].strip("/ "), cfg["qa"], load_refs(cfg)
     L, R, V = refs["listing"], refs["review"], refs["area"]
     lid, rid, r_lid = to_int(L["listing_id"]), to_int(R["review_id"]), to_int(R["listing_id"])
@@ -221,18 +199,17 @@ def main(config_path):
         lis.append(clean_listings(raw, lids, dict(zip(lid, L["analysis_area"])), boxes, rep))
         raw = read(build_path(root, snap, "reviews.csv.gz"), set(rid.astype(str)), "reviews", rep,
                    usecols=["listing_id", "id", "date", "comments"])
-        rev.append(clean_reviews(raw, rids, lids, dict(zip(rid, r_lid)), rep))
+        rev.append(clean_reviews(raw, rids, dict(zip(rid, r_lid)), rep))
     rep.snap = "all"  # bước cần nhìn mọi mốc cùng lúc
     listings, reviews = pd.concat(lis, ignore_index=True), pd.concat(rev, ignore_index=True).sort_values("snapshot")
     for col, name in (("price", "flag_price_outlier"), ("estimated_revenue_l365d", "flag_revenue_outlier")):
         rep.flag(listings, name, iqr_flag(listings[col].where(listings[col] != 0), listings["room_type"], qa["iqr_k"]), "outlier", "listings", col, x=listings[col])
     n, reviews = len(reviews), reviews.drop_duplicates("id", keep="last")
     rep.log("dup_snapshot", "reviews", "id", n - len(reviews))
-    out = ROOT / "data" / "processed"
-    listings.to_csv(out / "listings_clean.csv", index=False)
-    reviews.to_csv(out / "reviews_clean.csv", index=False)
+    listings.to_csv(PROC / "listings_clean.csv", index=False)
+    reviews.to_csv(PROC / "reviews_clean.csv", index=False)
     for table, parts in rep.rejected.items():
-        pd.concat(parts).to_csv(out / f"rejected_{table}.csv", index=False)
+        pd.concat(parts).to_csv(PROC / f"rejected_{table}.csv", index=False)
     (ROOT / "reports").mkdir(exist_ok=True)
     report = pd.DataFrame(rep.rows)
     report.to_csv(ROOT / "reports" / "qa_report.csv", index=False, encoding="utf-8-sig")
@@ -240,4 +217,4 @@ def main(config_path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml")
+    run(main)

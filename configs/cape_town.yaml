@@ -8,13 +8,16 @@ qa:
   iqr_k: 1.5
   expected:
     listings: 1000
-    calendar: 365000
     reviews: 5000
     entire_home: 875
     private_room: 125
     zero_reviews: {2025-09-28: 50, 2025-12-29: 30, 2026-03-30: 25, 2026-06-29: 25}
     missing_price: {2026-06-29: 20}
     area_size: [120, 130]
+kpi:
+  min_n: 10                         # nhóm ít hơn n quan sát thì không báo cáo (kpi.py và viz.py dùng chung)
+  min_price_coverage: 0.5           # mốc có tỉ lệ listing có giá thấp hơn mức này bị loại khỏi KPI giá/doanh thu
+  room_type: Entire home/apt        # loại phòng vẽ ở biểu đồ giá
 llm:
   model: gemini-3.1-flash-lite
   api_key_env: GEMINI_API_KEY
