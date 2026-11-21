@@ -1,114 +1,76 @@
-"""KPI từ dữ liệu sau QA (parquet do qa.py tạo).
-
-Chạy: python src/kpi.py configs/cape_town.yaml [--skip-llm]
-Ra:   data/processed/kpi_area.csv, kpi_time.csv, kpi_llm.csv, kpi_qa_impact.csv
-Dạng dài: kpi, snapshot, level, group, value, n, currency (tỉ lệ lưu dạng 0-1).
-KPI 6-7 đọc data/processed/<data_root>/llm_results.csv (cột review_id, sentiment, aspect) do llm.py sinh;
-thiếu tệp hoặc có --skip-llm thì bỏ qua, không làm sập pipeline."""
+"""Tính 5 KPI theo vùng: python src/kpi.py configs/cape_town.yaml  (chạy sau llm.py)
+Vào: data/processed/{listings_clean,reviews_clean,llm_results}.csv; tham số ở mục `kpi:` của YAML.
+Ra: data/processed/kpi_<tên>.csv (kpi_net_sentiment.csv có thêm ci_lo, ci_hi: CI 95% cluster bootstrap theo listing). Dạng dài: kpi, snapshot, level, group, room_type, value, n (số mẫu), currency (tỉ lệ lưu dạng 0-1)."""
 import sys
 
+import numpy as np
 import pandas as pd
-import yaml
 
-from download import ROOT, build_path
-from qa import TYPES, cast, load_refs, read_raw
+from common import PROC, run
 
-WINDOW, MIN_N = 90, 10  # cửa sổ lấp đầy (ngày); số quan sát tối thiểu để báo cáo một nhóm
-LEVELS = ["analysis_area", "neighbourhood_cleansed"]
-MONEY = {"median_price", "est_revenue_per_listing"}  # KPI có đơn vị tiền tệ
-
-
-def tidy(t, kpi, snap, level, cur):
-    """t: index = nhóm, hai cột cuối là value và n -> bảng dài."""
-    t = t.reset_index()
-    group = [" | ".join(map(str, r)) for r in t.iloc[:, :-2].itertuples(index=False)]
-    return pd.DataFrame({"kpi": kpi, "snapshot": snap, "level": level, "group": group,
-                         "value": t["value"], "n": t["n"], "currency": cur if kpi in MONEY else ""})
+S, OCC, REV = "snapshot", "estimated_occupancy_l365d", "estimated_revenue_l365d"
+LEVELS = ["analysis_area", "neighbourhood_cleansed"]  # cấp vùng: khu vực được giao và phường
+COLS = ["kpi", S, "level", "group", "room_type", "value", "n", "currency"]
+SCORE = {"positive": 1, "mixed": 0, "negative": -1}
+MONEY = {"median_price", "median_revenue"}  # KPI có đơn vị tiền tệ
 
 
-def by_level(df, keys, col, fn, kpi, snap, cur, min_n=MIN_N, levels=LEVELS):
-    """Gộp `col` bằng fn theo từng cấp khu vực (+ keys); bỏ nhóm có ít hơn min_n quan sát."""
-    parts = []
-    for lvl in levels:
-        t = df.groupby([lvl, *keys])[col].agg(value=fn, n="count")
-        parts.append(tidy(t[t["n"] >= min_n], kpi, snap, lvl, cur))
-    return parts
+def agg(d, col, fn, min_n, by=(S,)):
+    """fn(col) theo từng cấp vùng (+ by); bỏ dòng thiếu col và nhóm dưới min_n quan sát."""
+    d, parts = d.dropna(subset=[col]), []
+    for lvl in LEVELS:
+        t = d.groupby([*by, lvl])[col].agg(value=fn, n="size").round(4).reset_index()
+        parts.append(t.rename(columns={lvl: "group"}).assign(level=lvl))
+    out = pd.concat(parts)
+    return out[out["n"] >= min_n]
 
 
-def occupancy(cal):
-    """Lấp đầy ước tính từng listing trong WINDOW ngày đầu của lịch = 1 - tỉ lệ ngày available = t."""
-    w = cal[cal["date"] < cal["date"].min() + pd.Timedelta(days=WINDOW)]
-    return (~w["available"]).astype(float).groupby(w["listing_id"]).mean()
+def scored_reviews(df):
+    """KPI 5 và biểu đồ cảm xúc: review (status ok, không phải review tự động) -> listing -> vùng ở mốc mới nhất, kèm điểm cảm xúc."""
+    info = df.sort_values(S).drop_duplicates("id", keep="last").set_index("id")[LEVELS]  # mới nhất theo ngày, không theo thứ tự trong config
+    info.index = info.index.astype(str)
+    rv = pd.read_csv(PROC / "reviews_clean.csv", usecols=["id", "listing_id"], dtype=str)
+    z = pd.read_csv(PROC / "llm_results.csv", dtype=str).query("status == 'ok' and auto_generated == 'False'").merge(rv, left_on="review_id", right_on="id")
+    return z.join(info, on="listing_id").assign(score=lambda d: d["sentiment"].map(SCORE))
 
 
-def overall(L, C):
-    """Ba KPI toàn mẫu, dùng để so trước/sau QA."""
-    occ = occupancy(C).rename("occ")
-    m = L.join(occ, on="id")
-    return {"median_price": m["price"].median(), "occupancy_90d": occ.mean(),
-            "est_revenue_per_listing": (m["price"] * m["occ"] * 365).median()}
+def cluster_ci(z, B, seed):
+    """CI 95% của net sentiment từng nhóm (cả hai cấp vùng): cluster bootstrap, mỗi listing là một cụm (tổng điểm, số review).
+    Lấy mẫu có hoàn lại B lần, mỗi lần đúng bằng số listing gốc của nhóm; Net = tổng điểm / tổng review của các listing được chọn."""
+    rng, rows = np.random.default_rng(seed), []
+    for lvl in LEVELS:
+        for g, t in z.groupby(lvl):
+            c = t.groupby("listing_id")["score"].agg(["sum", "size"]).to_numpy()  # mỗi hàng một listing
+            r = c[rng.integers(0, len(c), (B, len(c)))].sum(axis=1)  # (B, 2): tổng điểm, tổng review của các listing được chọn
+            rows.append((lvl, g, *np.percentile(r[:, 0] / r[:, 1], [2.5, 97.5]).round(4)))
+    return pd.DataFrame(rows, columns=["level", "group", "ci_lo", "ci_hi"])
 
 
-def main(config):
-    cfg = yaml.safe_load(open(config, encoding="utf-8"))
-    root, cur, snaps = cfg["data_root"].strip("/ "), cfg["currency"], [str(s) for s in cfg["snapshots"]]
-    base = ROOT / "data/processed"
-    load = lambda snap, name: pd.read_parquet(base / root / snap / f"{name}.parquet")
-    area, time, llm = [], [], []
-    for snap in snaps:
-        try:
-            L, C = load(snap, "listings"), load(snap, "calendar")
-        except FileNotFoundError:
-            print(f"[skip] {snap}: thiếu dữ liệu sau QA")
-            continue
-        per = L.set_index("id").join(occupancy(C).rename("occ"))  # mỗi dòng = một listing ở mốc này
-        time += by_level(per, [], "occ", "mean", "occupancy_90d", snap, cur)  # KPI 2
-        if snap != snaps[-1]:
-            continue  # các KPI còn lại chỉ tính ở mốc cuối (price chỉ đáng tin ở mốc này)
-        if "price" in per:
-            area += by_level(per, ["room_type"], "price", "median", "median_price", snap, cur)  # KPI 1
-            per["rev"] = per["price"] * per["occ"] * 365
-            area += by_level(per, [], "rev", "median", "est_revenue_per_listing", snap, cur)  # KPI 3
-        area += by_level(per, [], "review_scores_rating", "median", "review_score_median", snap, cur)  # KPI 5
-
-        c = C.merge(L[["id", "analysis_area"]], left_on="listing_id", right_on="id")  # KPI 4: biên độ mùa vụ
-        c["m"], c["busy"] = c["date"].dt.to_period("M").astype(str), (~c["available"]).astype(float)
-        days = c.groupby("m")["date"].nunique()  # chỉ giữ tháng đủ ngày (tháng đầu/cuối của lịch bị cụt)
-        mo = c[c["m"].isin(days[days >= 28].index)].groupby(["analysis_area", "m"])["busy"].mean().groupby(level=0)
-        season = pd.DataFrame({"value": mo.max() / mo.min(), "n": L.groupby("analysis_area").size()})
-        time.append(tidy(season, "seasonality_ratio", snap, "analysis_area", cur))
-
-        R = load(snap, "reviews").merge(per[LEVELS], left_on="listing_id", right_index=True)  # KPI 5: review/tháng
-        R["m"] = R["date"].dt.to_period("M").astype(str)
-        time += by_level(R, ["m"], "id", "count", "reviews_per_month", snap, cur, min_n=1, levels=LEVELS[:1])
-
-        f = base / root / "llm_results.csv"  # KPI 6-7
-        if "--skip-llm" in sys.argv or not f.exists():
-            print("[skip] KPI 6-7 (LLM)")
-        else:
-            z = pd.read_csv(f).merge(R, left_on="review_id", right_on="id")
-            s = z.drop_duplicates("review_id").assign(score=lambda d: d["sentiment"].map({"positive": 1, "negative": -1}).fillna(0))
-            llm += by_level(s, [], "score", "mean", "net_sentiment", snap, cur)
-            neg = z.assign(neg=z["sentiment"].eq("negative")).groupby(["analysis_area", "aspect"])["neg"]
-            neg = neg.agg(value="mean", n="count").query("n >= @MIN_N")
-            llm.append(tidy(neg.loc[neg.groupby(level=0)["value"].idxmax()], "top_negative_aspect", snap, "analysis_area", cur))
-
-        if "price" in L:  # tác động của QA: cùng KPI tính trên dữ liệu thô (đã lọc ID, đã ép kiểu) và sau QA
-            refs = load_refs(cfg)
-            raw = {n: read_raw(build_path(root, snap, f"{n}.csv.gz"), n, refs) for n in ("listings", "calendar")}
-            typed = lambda n, cols: pd.DataFrame({c: cast(raw[n][c], TYPES[n][c])[0] for c in cols})
-            imp = pd.DataFrame({"before_qa": overall(typed("listings", ["id", "price"]),
-                                                     typed("calendar", ["listing_id", "date", "available"])),
-                                "after_qa": overall(L, C)})
-            imp["diff_pct"] = 100 * (imp["after_qa"] - imp["before_qa"]) / imp["before_qa"]
-            imp.rename_axis("kpi").reset_index().to_csv(base / "kpi_qa_impact.csv", index=False)
-
-    for name, parts in (("area", area), ("time", time), ("llm", llm)):
-        if parts:
-            pd.concat(parts).to_csv(base / f"kpi_{name}.csv", index=False)
-    print(f"Done: {sum(len(p) for p in area + time + llm)} KPI rows -> data/processed/kpi_*.csv")
-    return 0
+def main(cfg):
+    cur, K = cfg["currency"], cfg["kpi"]
+    n = K["min_n"]
+    df = pd.read_csv(PROC / "listings_clean.csv")
+    cover = df.groupby(S)["price"].apply(lambda s: s.notna().mean())  # tỉ lệ listing có giá ở từng mốc
+    usable = cover[cover >= K["min_price_coverage"]].index
+    if usable.empty:
+        sys.exit("Không mốc nào có đủ listing có giá: hạ kpi.min_price_coverage hoặc xem qa_report.csv (rule price_empty).")
+    for snap in cover.index.difference(usable):
+        print(f"Bỏ mốc {snap} khỏi KPI giá/doanh thu: chỉ {cover[snap]:.0%} listing có giá.")
+    sel = df[df[S].isin(usable)]
+    z = scored_reviews(df).dropna(subset=["score"])
+    kpis = {
+        "hibernation_rate": agg(df, OCC, lambda s: (s == 0).mean(), n),  # tỉ lệ listing có occupancy = 0
+        "median_price": agg(sel, "price", "median", n).assign(room_type="all"),  # gộp mọi loại phòng
+        "median_revenue": agg(sel, REV, "median", n),  # gồm cả listing doanh thu 0
+        "median_occupied_nights": agg(df[df[OCC] > 0], OCC, "median", n),
+        "net_sentiment": agg(z, "score", "mean", n, by=()).merge(
+            cluster_ci(z, cfg["eval"]["bootstrap"], cfg["seed"]), on=["level", "group"], how="left"),
+    }
+    for name, k in kpis.items():
+        k = k.assign(kpi=name, currency=cur if name in MONEY else "", **{S: k.get(S, "all")}).reindex(columns=[*COLS, *(c for c in ("ci_lo", "ci_hi") if c in k)])
+        k.to_csv(PROC / f"kpi_{name}.csv", index=False)
+        print(f"kpi_{name}.csv: {len(k)} dòng")
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "configs/cape_town.yaml"))
+    run(main)

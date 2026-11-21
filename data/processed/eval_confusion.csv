@@ -1,0 +1,12 @@
+method,label,pred,count
+llm,positive,positive,87
+llm,positive,mixed,10
+llm,negative,negative,2
+llm,mixed,mixed,1
+baseline,positive,positive,93
+baseline,positive,mixed,4
+baseline,negative,negative,2
+baseline,mixed,positive,1
+floor,positive,positive,97
+floor,negative,positive,2
+floor,mixed,positive,1
