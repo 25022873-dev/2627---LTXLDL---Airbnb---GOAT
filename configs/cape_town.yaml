@@ -16,8 +16,7 @@ qa:
     area_size: [120, 130]
 kpi:
   min_n: 10                         # nhóm ít hơn n quan sát thì không báo cáo (kpi.py và viz.py dùng chung)
-  min_price_coverage: 0.5           # mốc có tỉ lệ listing có giá thấp hơn mức này bị loại khỏi KPI giá/doanh thu
-  room_type: Entire home/apt        # loại phòng vẽ ở biểu đồ giá
+  min_price_coverage: 0.8           # mốc có tỉ lệ listing có giá thấp hơn mức này bị loại khỏi KPI giá/doanh thu
 llm:
   model: gemini-3.1-flash-lite
   api_key_env: GEMINI_API_KEY

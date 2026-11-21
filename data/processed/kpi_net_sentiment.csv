@@ -1,28 +1,28 @@
-kpi,snapshot,level,group,room_type,value,n,currency
-net_sentiment,all,analysis_area,A01,,0.9812,160,
-net_sentiment,all,analysis_area,A02,,0.8557,201,
-net_sentiment,all,analysis_area,A03,,0.887,115,
-net_sentiment,all,analysis_area,A04,,0.9423,104,
-net_sentiment,all,analysis_area,A05,,0.8387,124,
-net_sentiment,all,analysis_area,A06,,0.8015,131,
-net_sentiment,all,analysis_area,A07,,0.7865,89,
-net_sentiment,all,analysis_area,A08,,0.8947,76,
-net_sentiment,all,neighbourhood_cleansed,Ward 107,,0.9,20,
-net_sentiment,all,neighbourhood_cleansed,Ward 112,,1.0,19,
-net_sentiment,all,neighbourhood_cleansed,Ward 113,,1.0,12,
-net_sentiment,all,neighbourhood_cleansed,Ward 115,,0.7243,272,
-net_sentiment,all,neighbourhood_cleansed,Ward 23,,0.9655,29,
-net_sentiment,all,neighbourhood_cleansed,Ward 4,,0.8182,11,
-net_sentiment,all,neighbourhood_cleansed,Ward 54,,0.9119,159,
-net_sentiment,all,neighbourhood_cleansed,Ward 55,,0.8333,24,
-net_sentiment,all,neighbourhood_cleansed,Ward 57,,1.0,14,
-net_sentiment,all,neighbourhood_cleansed,Ward 58,,0.9062,32,
-net_sentiment,all,neighbourhood_cleansed,Ward 59,,0.9,20,
-net_sentiment,all,neighbourhood_cleansed,Ward 61,,1.0,61,
-net_sentiment,all,neighbourhood_cleansed,Ward 62,,0.9062,32,
-net_sentiment,all,neighbourhood_cleansed,Ward 64,,0.9242,66,
-net_sentiment,all,neighbourhood_cleansed,Ward 69,,1.0,10,
-net_sentiment,all,neighbourhood_cleansed,Ward 71,,1.0,10,
-net_sentiment,all,neighbourhood_cleansed,Ward 74,,0.9623,53,
-net_sentiment,all,neighbourhood_cleansed,Ward 77,,0.9341,91,
-net_sentiment,all,neighbourhood_cleansed,Ward 84,,1.0,13,
+kpi,snapshot,level,group,room_type,value,n,currency,ci_lo,ci_hi
+net_sentiment,all,analysis_area,A01,,0.9812,160,,0.9536,1.0
+net_sentiment,all,analysis_area,A02,,0.8557,201,,0.7747,0.9203
+net_sentiment,all,analysis_area,A03,,0.887,115,,0.7929,0.9647
+net_sentiment,all,analysis_area,A04,,0.9423,104,,0.8969,0.981
+net_sentiment,all,analysis_area,A05,,0.8387,124,,0.7721,0.9024
+net_sentiment,all,analysis_area,A06,,0.8015,131,,0.7107,0.8839
+net_sentiment,all,analysis_area,A07,,0.7865,89,,0.6341,0.9091
+net_sentiment,all,analysis_area,A08,,0.8947,76,,0.7969,0.9691
+net_sentiment,all,neighbourhood_cleansed,Ward 107,,0.9,20,,0.6,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 112,,1.0,19,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 113,,1.0,12,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 115,,0.7243,272,,0.6379,0.7985
+net_sentiment,all,neighbourhood_cleansed,Ward 23,,0.9655,29,,0.8694,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 4,,0.8182,11,,0.6667,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 54,,0.9119,159,,0.858,0.9576
+net_sentiment,all,neighbourhood_cleansed,Ward 55,,0.8333,24,,0.6471,0.9615
+net_sentiment,all,neighbourhood_cleansed,Ward 57,,1.0,14,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 58,,0.9062,32,,0.8077,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 59,,0.9,20,,0.7647,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 61,,1.0,61,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 62,,0.9062,32,,0.7406,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 64,,0.9242,66,,0.8667,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 69,,1.0,10,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 71,,1.0,10,,1.0,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 74,,0.9623,53,,0.8919,1.0
+net_sentiment,all,neighbourhood_cleansed,Ward 77,,0.9341,91,,0.8865,0.9851
+net_sentiment,all,neighbourhood_cleansed,Ward 84,,1.0,13,,1.0,1.0

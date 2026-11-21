@@ -41,11 +41,22 @@ Thêm dòng cho đầy đủ thành viên. Mỗi thành viên cần hiểu và g
 Nhóm thay các mục TODO bằng hướng dẫn đã kiểm thử trên bản clone mới:
 
 - **Phiên bản Python:** TODO — ghi phiên bản cụ thể trong `.python-version`.
-- **Cài môi trường và thư viện:** TODO — cung cấp lệnh cài và `requirements.txt` ghim phiên bản hoặc lockfile tương đương.
-- **Cấu hình thành phố, snapshot và tham số:** TODO — ghi đường dẫn và cách điều chỉnh.
-- **Biến môi trường chứa API key:** TODO — ghi tên biến và nhà cung cấp; không ghi khóa thật.
-- **Một lệnh chạy toàn bộ pipeline, bao gồm LLM:** TODO.
-- **Các tệp kết quả để đối chiếu:** TODO — dữ liệu xử lý, QA, KPI, kết quả LLM, hình và báo cáo.
+- **Cài môi trường và thư viện:** 
+git clone -b HNH-RfS https://github.com/25022873-dev/2627---LTXLDL---Airbnb---GOAT.git
+cd 2627---LTXLDL---Airbnb---GOAT
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1        # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+- **Cấu hình thành phố, snapshot và tham số:** 
+configs/cape_town.yaml (thành phố, bốn mốc, tham số QA, KPI, LLM, đối chứng, đánh giá). Chạy thành phố hoặc mốc khác: sao chép tệp này và sửa city, data_root, snapshots, group_code, ids_file.
+- **Biến môi trường chứa API key:** 
+GEMINI_API_KEY (Google Gemini). PowerShell: $env:GEMINI_API_KEY="..."; bash: export GEMINI_API_KEY=.... Không ghi khoá thật vào tệp trong repo. 
+- **Một lệnh chạy toàn bộ pipeline, bao gồm LLM:** python run_pipeline.py --config configs/cape_town.yaml
+Thêm --skip-llm để không gọi API và dùng kết quả LLM đã lưu trong data/processed/llm_cache.jsonl (không cần khoá). Thiếu khoá thì pipeline cũng tự dùng cache
+- **Các tệp kết quả để đối chiếu:** 
+data/processed/: listings_clean.csv, reviews_clean.csv, rejected_*.csv, kpi_*.csv, llm_results.csv, llm_usage.json, baseline_results.csv, eval_metrics.csv, eval_confusion.csv, eval_errors.csv.
+reports/qa_report.csv (báo cáo QA) và figures/*.png (5 biểu đồ KPI).
+Báo cáo: reports/report.pdf.
 
 ## Lưu ý khi làm bài
 

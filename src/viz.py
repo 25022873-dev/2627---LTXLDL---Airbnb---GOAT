@@ -49,11 +49,11 @@ def lines(k, title, ylabel, caption):
     return fig, caption
 
 
-def diverging(price, nights, rev, df, room):
+def diverging(price, nights, rev, df):
     order = rev.groupby("group")["value"].mean().sort_values(ascending=False).index  # doanh thu trung bình cao nhất nằm trên cùng
     dates, y = sorted(rev[S].unique()), np.arange(len(order))
     over = lambda d, col: d.groupby(S)[col].median()  # trung vị toàn mẫu tại từng mốc
-    P = (pivot(price) / over(df[df["room_type"] == room], "price") - 1) * 100
+    P = (pivot(price) / over(df, "price") - 1) * 100
     N = (pivot(nights) / over(df[df[OCC] > 0], OCC) - 1) * 100
     fig, axes = plt.subplots(1, len(dates), figsize=(4.2 * len(dates), 5), sharey=True, sharex=True, squeeze=False)
     for ax, d in zip(axes[0], dates):
@@ -66,7 +66,7 @@ def diverging(price, nights, rev, df, room):
     axes[0][0].set_yticks(y, order)
     axes[0][0].invert_yaxis()
     axes[0][0].set_ylabel("Khu vực")
-    fig.legend(handles=[Patch(color="tab:orange", label="Giá trung vị (nhà/căn hộ nguyên căn)"),
+    fig.legend(handles=[Patch(color="tab:orange", label="Giá trung vị (mọi loại phòng)"),
                         Patch(color="tab:blue", label="Số đêm đặt trung vị (listing có đêm đặt)"),
                         Patch(color="grey", alpha=.25, label="Vùng ±10% quanh trung vị toàn mẫu (xấp xỉ mức chung)")],
                loc="lower center", ncol=3, bbox_to_anchor=(.5, -.06), frameon=False)
@@ -76,21 +76,19 @@ def diverging(price, nights, rev, df, room):
                  "Thanh nằm trong vùng xám nghĩa là chênh lệch dưới 10%, xấp xỉ mức chung.")
 
 
-def sentiment(z, min_n):
-    tot = z["score"].mean()
-    z = z[z.groupby(A)["score"].transform("size") >= min_n]  # cùng ngưỡng với kpi_net_sentiment.csv
-    g = z.groupby(A)["score"].agg(["mean", "std", "size"]).sort_values("mean")  # cao nhất nằm trên cùng
-    g["ci"] = 1.96 * g["std"] / np.sqrt(g["size"])
+def sentiment(z, k):
+    """k: kpi_net_sentiment cấp khu vực (đã lọc n >= min_n, có ci_lo/ci_hi); z: review đã chấm điểm, chỉ dùng cho mức toàn mẫu và cơ cấu."""
+    tot, g = z["score"].mean(), k.set_index("group").sort_values("value")  # cao nhất nằm trên cùng
     pct = pd.crosstab(z[A], z["sentiment"], normalize="index").reindex(g.index)[["negative", "mixed", "positive"]] * 100
     y = np.arange(len(g))
     fig, (a, b) = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    a.hlines(y, g["mean"] - g["ci"], g["mean"] + g["ci"], color="tab:blue", alpha=.35, lw=7, label="Khoảng tin cậy 95%")
-    a.plot(g["mean"], y, "o", color="tab:blue", label="Điểm cảm xúc ròng ước tính")
+    a.hlines(y, g["ci_lo"], g["ci_hi"], color="tab:blue", alpha=.35, lw=7, label="Khoảng tin cậy 95%")
+    a.plot(g["value"], y, "o", color="tab:blue", label="Điểm cảm xúc ròng ước tính")
     a.axvline(tot, ls="--", color="black", label=f"Toàn mẫu ({vn(tot, 2)})")
-    for yi, (m, c, n) in enumerate(zip(g["mean"], g["ci"], g["size"])):
-        a.annotate(f"{vn(m, 2)} (n={n})", (m + c, yi), xytext=(5, 0), textcoords="offset points", va="center",
+    for yi, (m, hi, n) in enumerate(zip(g["value"], g["ci_hi"], g["n"])):
+        a.annotate(f"{vn(m, 2)} (n={n})", (hi, yi), xytext=(5, 0), textcoords="offset points", va="center",
                    bbox=dict(fc="white", ec="none", pad=1.5))
-    a.set_xlim(right=(g["mean"] + g["ci"]).max() + .35)
+    a.set_xlim(right=g["ci_hi"].max() + .35)
     a.set_yticks(y, g.index)
     a.legend(loc="upper center", bbox_to_anchor=(.5, -.14), ncol=3, frameon=False)
     a.set(xlabel="Điểm cảm xúc ròng (từ −1 đến +1)", ylabel="Khu vực", title="Điểm cảm xúc ròng và khoảng tin cậy 95%")
@@ -102,22 +100,21 @@ def sentiment(z, min_n):
     b.legend(title="Cảm xúc", loc="center left", bbox_to_anchor=(1.01, .5), frameon=False)
     b.set(xlim=(0, 100), xlabel="Tỷ lệ review (%)", title="Cơ cấu cảm xúc của review (mỗi thanh = 100%)")
     return fig, ("Khu vực nào khách hài lòng nhất? Điểm cảm xúc ròng = tỷ lệ tích cực trừ tỷ lệ tiêu cực (hỗn hợp tính 0), "
-                 "trên mẫu review do LLM gán nhãn (không tính review tự động); khoảng tin cậy tính theo xấp xỉ chuẩn.")
+                 "trên mẫu review do LLM gán nhãn (không tính review tự động); khoảng tin cậy 95% tính bằng bootstrap theo listing.")
 
 
 def main(cfg):
-    cur, room = cfg["currency"], cfg["kpi"]["room_type"]
+    cur = cfg["currency"]
     K = lambda n: (lambda k: k[k["level"] == A])(pd.read_csv(PROC / f"kpi_{n}.csv"))  # chỉ cấp khu vực
     df, price, rev = pd.read_csv(PROC / "listings_clean.csv"), K("median_price"), K("median_revenue")
-    price = price[price["room_type"] == room]
     figs = {
         "1_ty_le_ngu_dong": heatmap(K("hibernation_rate")),
-        "2_gia_trung_vi": lines(price, "Giá trung vị theo khu vực (nhà/căn hộ nguyên căn)", f"Giá trung vị ({cur}/đêm)",
-                                "Giá trung vị của từng khu vực thay đổi ra sao giữa các mốc? Chỉ tính nhà/căn hộ nguyên căn; mỗi chấm là một mốc thu thập."),
+        "2_gia_trung_vi": lines(price, "Giá trung vị theo khu vực (mọi loại phòng)", f"Giá trung vị ({cur}/đêm)",
+                                "Giá trung vị của từng khu vực thay đổi ra sao giữa các mốc? Tính chung mọi loại phòng; mỗi chấm là một mốc thu thập."),
         "3_doanh_thu_trung_vi": lines(rev, "Doanh thu trung vị mỗi listing theo khu vực", f"Doanh thu ước tính 365 ngày ({cur})",
                                       "Khu vực nào có doanh thu ước tính mỗi listing cao nhất? Doanh thu là ước tính 365 ngày của Inside Airbnb, tính cả listing doanh thu 0."),
-        "4_so_dem_dat_trung_vi": diverging(price, K("median_occupied_nights"), rev, df, room),
-        "5_cam_xuc_rong": sentiment(scored_reviews(df), cfg["kpi"]["min_n"]),
+        "4_so_dem_dat_trung_vi": diverging(price, K("median_occupied_nights"), rev, df),
+        "5_cam_xuc_rong": sentiment(scored_reviews(df), K("net_sentiment")),
     }
     snaps = cfg["snapshots"]
     src = f"Nguồn: Inside Airbnb (CC BY 4.0), {cfg['city'].replace('_', ' ').title()}, các mốc từ {dmy(snaps[0])} đến {dmy(snaps[-1])}."

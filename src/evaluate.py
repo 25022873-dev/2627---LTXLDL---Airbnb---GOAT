@@ -14,14 +14,14 @@ CI_NAMES = ["accuracy_ci_lo", "accuracy_ci_hi", "macro_f1_ci_lo", "macro_f1_ci_h
 
 
 def f1(y, p, c):
-    """F1 của lớp c = 2TP / (số dự đoán c + số thật c)."""
+    """F1 của lớp c = 2TP / (2TP + FP + FN) = 2TP / (số dự đoán c + số thật c); mẫu số bằng 0 thì F1 = 0."""
     d = np.sum(p == c) + np.sum(y == c)
-    return 2 * np.sum((y == c) & (p == c)) / d
+    return 2 * np.sum((y == c) & (p == c)) / d if d else 0.0
 
 
-def macro_f1(y, p):
-    """Trung bình F1 trên các lớp thực sự có trong nhãn tay."""
-    return float(np.mean([f1(y, p, c) for c in np.unique(y)]))
+def macro_f1(y, p, classes=None):
+    """Trung bình F1 trên `classes` (mặc định: các lớp có trong y)."""
+    return float(np.mean([f1(y, p, c) for c in (np.unique(y) if classes is None else classes)]))
 
 
 def metrics(y, p, full=False):
@@ -41,8 +41,8 @@ def kappa(a, b):
 
 def boot(y, preds, B, seed):
     """Bootstrap B lần (mọi phương pháp dùng chung phép mẫu lại): CI 95% của accuracy, macro-F1 và chênh lệch llm - baseline."""
-    idx = np.random.default_rng(seed).integers(0, len(y), (B, len(y)))
-    st = {m: np.array([[np.mean(y[i] == p[i]), macro_f1(y[i], p[i])] for i in idx]) for m, p in preds.items()}
+    idx, cl = np.random.default_rng(seed).integers(0, len(y), (B, len(y))), np.unique(y)  # lớp cố định theo nhãn tay gốc, dùng cho mọi lần lặp
+    st = {m: np.array([[np.mean(y[i] == p[i]), macro_f1(y[i], p[i], cl)] for i in idx]) for m, p in preds.items()}
     st["diff"] = st["llm"] - st["baseline"]
     return {m: np.percentile(v, [2.5, 97.5], axis=0).T.ravel() for m, v in st.items()}  # theo thứ tự CI_NAMES
 
