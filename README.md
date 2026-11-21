@@ -14,11 +14,17 @@
 
 | Họ tên | MSSV | GitHub username | Công việc phụ trách |
 |---|---|---|---|
-| Nguyễn Quốc Huy | 25022873 | 25022873-dev | TODO |
-| Hoàng Ngọc Hưng | 25022878 | ProgrammingShell | TODO |
-| Nguyễn Tiến Lĩnh | 25022914 | TODO | TODO |
-| Khổng Nam Khánh | 25022898 | TODO | TODO |
-| Lương Trường Giang | 25022840 | TODO | TODO |
+| Nguyễn Quốc Huy | 25022873 | 25022873-dev | 
+
+Tham gia phát triển dự án, thảo luận và lựa chọn KPI, lựa chọn biểu đồ phù hợp; phụ trách viết báo cáo (Report), tổng hợp kết quả và tài liệu dự án. |
+| Hoàng Ngọc Hưng | 25022878 | ProgrammingShell | 
+
+Tham gia phát triển dự án, phụ trách nhiều phần lập trình (Coding), xử lý và sửa lỗi (Debugging), tích hợp và hoàn thiện các chức năng hệ thống; phối hợp thảo luận KPI và biểu đồ. |
+| Nguyễn Tiến Lĩnh | 25022914 | TODO | Tham gia phát triển dự án, phân tích yêu cầu, đề xuất và đánh giá các giải pháp cải thiện hệ thống; tham gia tổ chức thảo luận, theo dõi các vấn đề phát sinh và cùng nhóm lựa chọn KPI, biểu đồ đánh giá. |
+| Khổng Nam Khánh | 25022898 | TODO | 
+
+Tham gia phát triển dự án, kiểm thử hệ thống , phát hiện, ghi nhận và đánh giá lỗi; cùng nhóm lựa chọn KPI và biểu đồ phù hợp để đánh giá hiệu quả hoạt động. |
+| Lương Trường Giang | 25022840 | TODO |  Tham gia phát triển dự án, xây dựng mã nguồn cho một số chức năng, đối chiếu và so sánh mã nguồn với Hưng để kiểm tra tính chính xác và thống nhất trong quá trình triển khai; tham gia phân tích dữ liệu, xây dựng biểu đồ trực quan hóa KPI, đánh giá và diễn giải kết quả.|
 
 Mỗi thành viên cần hiểu và giải thích được toàn bộ sản phẩm của nhóm.
 
