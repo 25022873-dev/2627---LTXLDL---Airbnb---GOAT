@@ -16,7 +16,7 @@
 |---|---|---|---|
 | Nguyễn Quốc Huy | 25022873 | 25022873-dev | Tham gia phát triển dự án, tổ chức thảo luận và cùng nhóm lựa chọn KPI, lựa chọn biểu đồ phù hợp để đánh giá hiệu quả hoạt động; phụ trách viết báo cáo (Report) và quản lý repo của nhóm. |
 | Hoàng Ngọc Hưng | 25022878 | ProgrammingShell | Tham gia phát triển dự án, đảm nhận phần nhiều công việc lập trình (Coding), phát hiện và nêu các lỗi (Debugging) để cả nhóm cùng xử lý, góp phần tích hợp và hoàn thiện các chức năng hệ thống; phối hợp thảo luận KPI và biểu đồ cùng nhóm. |
-| Nguyễn Tiến Lĩnh | 25022914 | TODO | Tham gia phát triển dự án, phân tích yêu cầu, đề xuất và đánh giá các giải pháp cải thiện hệ thống; tham gia tổ chức thảo luận, theo dõi các vấn đề phát sinh và cùng nhóm lựa chọn KPI, biểu đồ đánh giá. |
+| Nguyễn Tiến Lĩnh | 25022914 | linhnguyentien2007-glitch | Tham gia phát triển dự án, phân tích yêu cầu, đề xuất và đánh giá các giải pháp cải thiện hệ thống; tham gia tổ chức thảo luận, theo dõi các vấn đề phát sinh và cùng nhóm lựa chọn KPI, biểu đồ đánh giá. |
 | Khổng Nam Khánh | 25022898 | knkknk143007 | Tham gia phát triển dự án, kiểm thử hệ thống, phát hiện, ghi nhận và đánh giá lỗi; cùng nhóm lựa chọn KPI và biểu đồ phù hợp để đánh giá hiệu quả hoạt động. |
 | Lương Trường Giang | 25022840 | TODO | Tham gia phát triển dự án, xây dựng mã nguồn cho một số chức năng, đối chiếu mã nguồn với Hưng để kiểm tra tính chính xác; tham gia phân tích dữ liệu, xây dựng biểu đồ trực quan hóa KPI và diễn giải kết quả. |
 
